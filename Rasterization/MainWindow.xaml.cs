@@ -15,11 +15,12 @@ using System.Windows.Shapes;
 
 namespace Rasterization
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        private Point StartPoint = new Point();
+        private Point EndPoint = new Point();
+        private List<IShape> SelectedShape = new List<IShape>();
+
         public MainWindow()
         {
             InitializeComponent();

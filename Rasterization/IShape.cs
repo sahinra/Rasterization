@@ -8,5 +8,6 @@ namespace Rasterization
 {
     interface IShape
     {
+
     }
 }
