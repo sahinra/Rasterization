@@ -1,0 +1,118 @@
+﻿<Window x:Class="Rasterization.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Rasterization"
+        mc:Ignorable="d"
+        Title="Rasterization" Height="550" Width="1000" >
+    
+    <Window.Resources>
+        <Style x:Key="ButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+        <Style x:Key="ButtonTextBlockStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="TextBoxStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Margin" Value="5,0,5,0"/>
+            <Setter Property="IsEnabled" Value="False"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style x:Key="LabelStyle" TargetType="{x:Type Label}">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+        <Style x:Key="SliderStyle" TargetType="{x:Type Slider}">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="Margin" Value="5,0,5,0"/>
+            <Setter Property="IsEnabled" Value="False"/>
+            <Setter Property="Minimum" Value="1"/>
+            <Setter Property="Maximum" Value="3"/>
+        </Style>
+        <Style x:Key="ComboBoxStyle" TargetType="{x:Type ComboBox}">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="100"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="5,0,5,0"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="IsEnabled" Value="False"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="LightGray" x:Name="MyMenuGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="150"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="LineButton" Style="{StaticResource ButtonStyle}" Click="LineButtonClick">
+                    <TextBlock Text="Line" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Button x:Name="CircleButton" Style="{StaticResource ButtonStyle}" Click="CircleButtonClick">
+                    <TextBlock Text="Circle" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Button x:Name="PolygonButton" Style="{StaticResource ButtonStyle}" Click="PolygonButtonClick">
+                    <TextBlock Text="Polygon" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" Content="Color" Style="{StaticResource LabelStyle}"/>
+                    <Label Grid.Column="0" Grid.Row="1" Content="Thickness" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox Grid.Column="1"
+                                  Grid.Row="0"
+                                  x:Name="MyColorComboBox"
+                                  Style="{StaticResource ComboBoxStyle}"/>
+                    <Slider Grid.Column="1"
+                                Grid.Row="1"
+                                x:Name="MySlider"
+                                Style="{StaticResource SliderStyle}"/>
+                </Grid>
+                
+                <Button x:Name="MoveButton" Style="{StaticResource ButtonStyle}" Click="MoveButtonClick">
+                    <TextBlock Text="Move" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Button x:Name="EditButton" Style="{StaticResource ButtonStyle}" Click="EditButtonClick">
+                    <TextBlock Text="Edit" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button x:Name="DeleteButton" Style="{StaticResource ButtonStyle}" Click="DeleteButtonClick">
+                    <TextBlock Text="Delete" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Button x:Name="ClearButton" Style="{StaticResource ButtonStyle}" Click="ClearButtonClick">
+                    <TextBlock Text="Clear" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Canvas
+                Grid.Row="1"
+                x:Name="Canvas"
+                Background="Ivory"
+                MouseLeftButtonDown="CanvasLeftDown"
+                MouseMove="CanvasMouseMove"
+                MouseLeftButtonUp="CanvasLeftUp"
+                AllowDrop="True">
+        </Canvas>
+    </Grid>
+</Window>
