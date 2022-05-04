@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Rasterization
 {
-    class Polygon : IShape
+    class Polygojkn : IShape
     {
     }
 }

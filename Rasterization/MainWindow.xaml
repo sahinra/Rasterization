@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rasterization"
         mc:Ignorable="d"
+        Loaded="Window_Loaded"
         Title="Rasterization" Height="550" Width="1000" >
     
     <Window.Resources>
@@ -43,8 +44,9 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="5,0,5,0"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="IsEnabled" Value="False"/>
+            <!--<Setter Property="IsEnabled" Value="False"/>-->
         </Style>
+        <local:ColorToBrushConverter x:Key="colorToBrushConverter"/>
     </Window.Resources>
     
     <Grid>
@@ -81,7 +83,9 @@
                     <ComboBox Grid.Column="1"
                                   Grid.Row="0"
                                   x:Name="MyColorComboBox"
-                                  Style="{StaticResource ComboBoxStyle}"/>
+                                  Style="{StaticResource ComboBoxStyle}"
+                                  ItemsSource ="{Binding}"
+                                  SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}" />
                     <Slider Grid.Column="1"
                                 Grid.Row="1"
                                 x:Name="MySlider"
@@ -105,14 +109,13 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <Canvas
+        <Image
                 Grid.Row="1"
-                x:Name="Canvas"
-                Background="Ivory"
+                x:Name="MyCanvas"
                 MouseLeftButtonDown="CanvasLeftDown"
                 MouseMove="CanvasMouseMove"
                 MouseLeftButtonUp="CanvasLeftUp"
                 AllowDrop="True">
-        </Canvas>
+        </Image>
     </Grid>
 </Window>
