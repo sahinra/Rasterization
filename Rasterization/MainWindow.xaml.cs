@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Reflection;
 using System.Drawing.Imaging;
 //using System.Drawing;
+//using System.Drawing;
 
 namespace Rasterization
 {
@@ -22,18 +23,11 @@ namespace Rasterization
     {
         private Point StartPoint;
         private Point EndPoint;
-        private Point CurrentPoint;
-        private Line newLine;
         int DrawingMode = 6; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Disabled
         private List<UIElement> DrawnShapes = new List<UIElement>();
         private List<Color> ColorInfo = new List<Color>();
-        private WriteableBitmap bmp = new WriteableBitmap(
-                1000,
-                550,
-                96,
-                96,
-                PixelFormats.Bgr32,
-                null);
+        private WriteableBitmap writeableBitmap;
+        private List<Point> polygonPoints = new List<Point>();
 
         public MainWindow()
         {
@@ -42,8 +36,17 @@ namespace Rasterization
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //bmp = new System.Drawing.Bitmap((int)Canvas.Width, (int)Canvas.Height);
-            MyCanvas.Source = bmp;
+            int rawStride = (1000 * PixelFormats.Bgr32.BitsPerPixel + 7) / 8;
+            byte[] rawImage = new byte[rawStride * 550];
+            BitmapSource bitmap = BitmapSource.Create(1000, 550,
+                96, 96, PixelFormats.Bgr32, null,
+                rawImage, rawStride);
+            writeableBitmap = new WriteableBitmap(bitmap);
+
+            MyCanvas.Source = writeableBitmap;
+            MyCanvas.Stretch = Stretch.None;
+            MyCanvas.HorizontalAlignment = HorizontalAlignment.Left;
+            MyCanvas.VerticalAlignment = VerticalAlignment.Top;
 
             var properties = typeof(Colors).GetProperties(BindingFlags.Static | BindingFlags.Public);
             ColorInfo = properties.Select(prop =>
@@ -54,7 +57,7 @@ namespace Rasterization
             FillColors();
         }
 
-        private void FillColors() 
+        private void FillColors()
         {
             for (int i = 0; i < ColorInfo.Count; i++)
             {
@@ -69,24 +72,34 @@ namespace Rasterization
         }
 
         //https://stackoverflow.com/questions/4662193/how-to-convert-from-system-drawing-color-to-system-windows-media-color
-
         private System.Drawing.Color ConvertColor(System.Windows.Media.Color color)
         {
             return System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
         }
 
-        //private static System.Drawing.Bitmap GetArgbCopy(System.Drawing.Image sourceImage)
-        //{
-        //    System.Drawing.Bitmap bitmapSource = GetArgbCopy(MyCanvas);
+        void SetPixel(int x, int y, Color color)
+        {
+            if (y > writeableBitmap.PixelHeight - 1 || x > writeableBitmap.PixelWidth - 1)
+                return;
+            if (y < 0 || x < 0)
+                return;
 
-        //    using (Graphics graphics = Graphics.FromImage(bmpNew))
-        //    {
-        //        graphics.DrawImage(sourceImage, new System.Drawing.Rectangle(0, 0, bmpNew.Width, bmpNew.Height),
-        //            new System.Drawing.Rectangle(0, 0, bmpNew.Width, bmpNew.Height), GraphicsUnit.Pixel);
-        //        graphics.Flush();
-        //    }
-        //    return bmpNew;
-        //}
+            IntPtr pBackBuffer = writeableBitmap.BackBuffer;
+            int stride = writeableBitmap.BackBufferStride;
+
+            unsafe
+            {
+                byte* pBuffer = (byte*)pBackBuffer.ToPointer();
+                int location = y * stride + x * 4;
+
+                pBuffer[location] = color.B;
+                pBuffer[location + 1] = color.G;
+                pBuffer[location + 2] = color.R;
+                pBuffer[location + 3] = color.A;
+
+            }
+            writeableBitmap.AddDirtyRect(new Int32Rect(x, y, 1, 1));
+        }
 
         private void ApplyDDA(Point startPoint, Point endPoint)
         {
@@ -94,15 +107,8 @@ namespace Rasterization
             double distanceY = endPoint.Y - startPoint.Y;
             double step;
             double slope = (endPoint.Y - startPoint.Y) / (endPoint.X - startPoint.X);
-            //System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(1000, 550);
-
-            BitmapImage bmp = new BitmapImage();
-
-
-            //System.Drawing.Color newColor = System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
 
             //https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)
-
             if (Math.Abs(distanceX) > Math.Abs(distanceY))
             {
                 step = Math.Abs(distanceX);
@@ -117,42 +123,14 @@ namespace Rasterization
 
             for (int i = 1; i <= step; i++)
             {
-                //bmp.SetPixel((int)startPoint.X, (int)startPoint.Y, ConvertColor(Colors.Black));
+                SetPixel((int)startPoint.X, (int)startPoint.Y, Colors.Red);
+                SetPixel((int)endPoint.X, (int)endPoint.Y, Colors.Blue);
                 startPoint.X += distanceX;
                 startPoint.Y += distanceY;
             }
-
-            //    if (startPoint.Y < endPoint.Y)
-            //    {
-            //        if(startPoint.X < endPoint.X)
-            //        {
-            //            for (int i = (int)startPoint.X; i < distanceX; i++)
-            //            {
-
-            //            }
-            //        }
-            //        else
-            //        {
-
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if (startPoint.X < endPoint.X)
-            //        {
-            //            for (int i = (int)startPoint.X; i < distanceX; i++)
-            //            {
-
-            //            }
-            //        }
-            //        else
-            //        {
-
-            //        }
-            //    }
         }
 
-        void MidpointCircle(int R)
+        void ApplyMidpointCircle(int R)
         {
             //int dE = 3;
             //int dSE = 5 ‐ 2 * R;
@@ -194,14 +172,6 @@ namespace Rasterization
         {
             if (e.LeftButton == MouseButtonState.Pressed && DrawingMode == 1)
             {
-                //Line line = new Line();
-
-                //line.Stroke = SystemColors.WindowFrameBrush;
-                //line.X1 = CurrentPoint.X;
-                //line.Y1 = CurrentPoint.Y;
-                //line.X2 = e.GetPosition(this).X;
-                //line.Y2 = e.GetPosition(this).Y;
-
                 EndPoint = e.GetPosition(this);
             }
             if (e.LeftButton == MouseButtonState.Pressed && DrawingMode == 2)
@@ -217,31 +187,15 @@ namespace Rasterization
         {
             if(DrawingMode == 1) //line
             {
-                //newLine = new Line();
-                //newLine.Stroke = SystemColors.WindowFrameBrush;
-                //newLine.X1 = StartPoint.X;
-                //newLine.Y1 = StartPoint.Y;
-                //newLine.X2 = EndPoint.X;
-                //newLine.Y2 = EndPoint.Y;
-
-
-                bmp.Lock();
+                writeableBitmap.Lock();
                 try
                 {
                     ApplyDDA(StartPoint, EndPoint);
-                    //foreach (var point in line.Points)
-                    //{
-                    //    SetPixel(point.X, point.Y, line.Color);
-                    //    line.Brush.Center = point;
-                    //    line.Brush.CalculatePoints();
-                    //    Draw(line.Brush);
-                        
 
-                    //}
                 }
                 finally
                 {
-                    bmp.Unlock();
+                    writeableBitmap.Unlock();
                 }
 
                 //Canvas.Children.Add(new Line(StartPoint, EndPoint));
@@ -250,6 +204,19 @@ namespace Rasterization
             {
 
             }
+            if (DrawingMode == 3) //polygon
+            {
+
+            }
+            if (DrawingMode == 4) //move
+            {
+
+            }
+            if (DrawingMode == 5) //edit
+            {
+
+            }
+            return;
         }
 
         private void LineButtonClick(object sender, RoutedEventArgs e)
@@ -285,10 +252,7 @@ namespace Rasterization
 
         private void ClearButtonClick(object sender, RoutedEventArgs e)
         {
-            //foreach (var o in MyCanvas.Children)
-            //{
-            //    MyCanvas.Children.Remove((UIElement)o);
-            //}
+
         }
     }
 }

@@ -5,6 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Rasterization"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        MaxWidth="1000"
+        MaxHeight="550"
+        MinWidth="1000"
+        MinHeight="550"
         Loaded="Window_Loaded"
         Title="Rasterization" Height="550" Width="1000" >
     
