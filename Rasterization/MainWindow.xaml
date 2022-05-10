@@ -110,7 +110,7 @@
                     <TextBlock Text="Delete" Style="{StaticResource ButtonTextBlockStyle}"/>
                 </Button>
                 <Button x:Name="ClearButton" Style="{StaticResource ButtonStyle}" Click="ClearButtonClick">
-                    <TextBlock Text="Clear" Style="{StaticResource ButtonTextBlockStyle}"/>
+                    <TextBlock Text="Clear All" Style="{StaticResource ButtonTextBlockStyle}"/>
                 </Button>
             </StackPanel>
         </Grid>

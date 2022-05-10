@@ -2,6 +2,7 @@
 using System.Windows.Media;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Collections.Generic;
 
 namespace Rasterization
 {
@@ -12,11 +13,19 @@ namespace Rasterization
         public WriteableBitmap WriteableBitmap { get; set; }
         public Point StartPoint {get; set;}
         public Point EndPoint { get; set; }
+        public List<Point> Points { get; set; }
 
         public DrawLine(Point startPoint, Point endPoint)
         {
             StartPoint = startPoint;
             EndPoint = endPoint;
+        }
+
+        public List<Point> GetPoints()
+        {
+            Points.Add(StartPoint);
+            Points.Add(EndPoint);
+            return Points;
         }
 
         void SetPixel(int x, int y, Color color)

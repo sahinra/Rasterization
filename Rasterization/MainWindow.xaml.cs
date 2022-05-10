@@ -14,7 +14,7 @@ namespace Rasterization
     {
         private Point StartPoint;
         private Point EndPoint;
-        int DrawingMode = 6; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Disabled
+        int DrawingMode = 8; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Disabled
         private List<IDrawnShapes> DrawnShapes = new List<IDrawnShapes>();
         private List<Color> ColorInfo = new List<Color>();
         private WriteableBitmap writeableBitmap;
@@ -70,6 +70,53 @@ namespace Rasterization
             return System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
         }
 
+        private int MeasureDistance(Point p1, Point p2)
+        {
+            return (int)Math.Sqrt(Math.Pow(p1.X - p2.X, 2) + Math.Pow(p1.Y - p2.Y, 2));
+        }
+
+        private Point FindNearestPoint(Point point, List<Point> points)
+        {
+            int min = MeasureDistance(point, points[0]);
+            Point nearestPoint = points[0];
+            foreach (var p in points)
+            {
+                if(min > MeasureDistance(point, p))
+                {
+                    min = MeasureDistance(point, p);
+                    nearestPoint = p;
+                }
+            }
+            return nearestPoint;
+        }
+
+        private int FindMinDistance(Point point, List<Point> points)
+        {
+            int min = MeasureDistance(point, points[0]);
+            Point nearestPoint = points[0];
+            foreach (var p in points)
+            {
+                if (min > MeasureDistance(point, p))
+                {
+                    min = MeasureDistance(point, p);
+                    nearestPoint = p;
+                }
+            }
+            return min;
+        }
+
+        private int FindNearestShape()
+        {
+            int indexShape = 0;
+            List<Point> pointsList = new List<Point>();
+            foreach (var o in DrawnShapes)
+            {
+                pointsList.Add(FindNearestPoint(StartPoint, o.GetPoints()));
+                indexShape = DrawnShapes.IndexOf(o);
+            }
+            return indexShape;
+        }
+
         private void CanvasLeftDown(object sender, MouseButtonEventArgs e)
         {
             StartPoint = e.GetPosition(this);
@@ -83,9 +130,35 @@ namespace Rasterization
                 }
                 else return;
             }
-            if (DrawingMode == 4) //
+            if (DrawingMode == 4)
+            {
+                foreach(var o in DrawnShapes)
+                {
+                    Point movedPoint = FindNearestPoint(StartPoint, o.GetPoints());  
+                }
+            }
+            if (DrawingMode == 5)
+            {
+                foreach (var o in DrawnShapes)
+                {
+                    Point point = FindNearestPoint(StartPoint, o.GetPoints());
+                    int index = o.GetPoints().IndexOf(point);
+                    Point newPoint = StartPoint;
+                    o.DeleteShape();
+                    DrawnShapes.Remove(o);
+                    o.GetPoints().Insert(index, newPoint);
+                    DrawnShapes.Add(o);
+                    //add redraw
+                }
+            }
+            if (DrawingMode == 6)
             {
 
+            }
+            if (DrawingMode == 7)
+            {
+                MyCanvas.Source = writeableBitmap;
+                DrawnShapes.Clear();
             }
         }
 
@@ -168,12 +241,20 @@ namespace Rasterization
             {
 
             }
+            if (DrawingMode == 6) //delete
+            {
+
+            }
+            if (DrawingMode == 7) //clear all
+            {
+
+            }
             return;
         }
 
         private void LineButtonClick(object sender, RoutedEventArgs e)
         {
-            DrawingMode = 1;           
+            DrawingMode = 1;
         }
 
         private void CircleButtonClick(object sender, RoutedEventArgs e)
@@ -198,16 +279,12 @@ namespace Rasterization
 
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
-
+            DrawingMode = 6;
         }
 
         private void ClearButtonClick(object sender, RoutedEventArgs e)
         {
-            foreach(var obj in DrawnShapes)
-            {
-                obj.DeleteShape();
-                DrawnShapes.Remove(obj);
-            }
+            DrawingMode = 7;
         }
     }
 }

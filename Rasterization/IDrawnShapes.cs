@@ -1,4 +1,6 @@
-﻿using System.Windows.Media;
+﻿using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Rasterization
@@ -8,6 +10,7 @@ namespace Rasterization
         string Name { get; set; }
         Color Color { get; set; }
         WriteableBitmap WriteableBitmap { get; set; }
+        List<Point> GetPoints();
         void DeleteShape();
         void MoveShape();
         void EditShape();

@@ -2,6 +2,7 @@
 using System.Windows.Media;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Collections.Generic;
 
 namespace Rasterization
 {
@@ -12,6 +13,13 @@ namespace Rasterization
         public WriteableBitmap WriteableBitmap { get; set; }
         public Point Center { get; set; }
         public int Radius { get; set; }
+        public List<Point> Points { get; set; }
+
+        public List<Point> GetPoints()
+        {
+            Points.Add(Center);
+            return Points;
+        }
 
         public DrawCircle(Point center, Point endPoint)
         {

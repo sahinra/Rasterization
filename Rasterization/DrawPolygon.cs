@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -10,8 +11,18 @@ namespace Rasterization
         public string Name { get; set; } = "Polygon";
         public Color Color { get; set; } = Colors.Black;
         public WriteableBitmap WriteableBitmap { get; set; }
+        List<Point> PolyPoints { get; set; }
 
         public PointCollection Points = new PointCollection();
+
+        public List<Point> GetPoints()
+        {
+            foreach (var o in Points)
+            {
+                PolyPoints.Add(o);
+            }
+            return PolyPoints;
+        }
 
         public DrawPolygon(PointCollection points)
         {
