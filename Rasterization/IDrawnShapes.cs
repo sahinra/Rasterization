@@ -12,8 +12,7 @@ namespace Rasterization
         WriteableBitmap WriteableBitmap { get; set; }
         List<Point> GetPoints();
         void DeleteShape();
-        void Redraw(int x, int y);
-        void MoveShape();
+        void MoveShape(int x, int y);
         void EditShape(int x, int y, int index);
     }
 }

@@ -220,7 +220,7 @@ namespace Rasterization
             }
             if (DrawingMode == 4) //move
             {
-                DrawnShapes[selectedIndex].Redraw((int)EndPoint.X, (int)EndPoint.Y);
+                DrawnShapes[selectedIndex].MoveShape((int)EndPoint.X, (int)EndPoint.Y);
             }
             if (DrawingMode == 5) //edit
             {

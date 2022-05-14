@@ -20,7 +20,6 @@ namespace Rasterization
         {
             StartPoint = startPoint;
             EndPoint = endPoint;
-            GetPoints();
         }
 
         public List<Point> GetPoints()
@@ -88,10 +87,15 @@ namespace Rasterization
 
         public void DeleteShape()
         {
+            Draw(Colors.Black);
+        }
+
+        public void Draw(Color color)
+        {
             WriteableBitmap.Lock();
             try
             {
-                ApplyDDA(Colors.Black);
+                ApplyDDA(color);
             }
             finally
             {
@@ -115,23 +119,10 @@ namespace Rasterization
             Points.RemoveAt(index);
             Points.Insert(index, newPoint);
 
-            WriteableBitmap.Lock();
-            try
-            {
-                ApplyDDA(Colors.DeepSkyBlue);
-            }
-            finally
-            {
-                WriteableBitmap.Unlock();
-            }
+            Draw(Colors.Pink);
         }
 
-        public void MoveShape()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Redraw(int x, int y)
+        public void MoveShape(int x, int y)
         {
             double dx = x - Points[0].X;
             double dy = y - Points[0].Y;
@@ -155,15 +146,7 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            WriteableBitmap.Lock();
-            try
-            {
-                ApplyDDA(Colors.HotPink);
-            }
-            finally
-            {
-                WriteableBitmap.Unlock();
-            }
+            Draw(Colors.Blue);
         }
     }
 }

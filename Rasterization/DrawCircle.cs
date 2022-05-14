@@ -92,10 +92,15 @@ namespace Rasterization
 
         public void DeleteShape()
         {
+            Draw(Colors.Black);
+        }
+
+        public void Draw(Color color)
+        {
             WriteableBitmap.Lock();
             try
             {
-                ApplyMidpointCircle(Colors.Black);
+                ApplyMidpointCircle(color);
             }
             finally
             {
@@ -110,23 +115,10 @@ namespace Rasterization
 
             DeleteShape();
 
-            WriteableBitmap.Lock();
-            try
-            {
-                ApplyMidpointCircle(Colors.Pink);
-            }
-            finally
-            {
-                WriteableBitmap.Unlock();
-            }
+            Draw(Colors.Pink);
         }
 
-        public void MoveShape()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Redraw(int x, int y)
+        public void MoveShape(int x, int y)
         {
             double dx = x - Points[0].X;
             double dy = y - Points[0].Y;
@@ -141,15 +133,7 @@ namespace Rasterization
             Points.Clear();
             Points.Add(newCenter);
 
-            WriteableBitmap.Lock();
-            try
-            {
-                ApplyMidpointCircle(Colors.HotPink);
-            }
-            finally
-            {
-                WriteableBitmap.Unlock();
-            }
+            Draw(Colors.Violet);
         }
     }
 }

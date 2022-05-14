@@ -43,10 +43,15 @@ namespace Rasterization
 
         public void DeleteShape()
         {
+            Draw(Colors.Black);
+        }
+
+        public void Draw(Color color)
+        {
             WriteableBitmap.Lock();
             try
             {
-                ApplyModifiedDDA(Colors.Black);
+                ApplyModifiedDDA(color);
             }
             finally
             {
@@ -70,18 +75,10 @@ namespace Rasterization
             Points.RemoveAt(index);
             Points.Insert(index, newPoint);
 
-            WriteableBitmap.Lock();
-            try
-            {
-                ApplyModifiedDDA(Colors.Pink);
-            }
-            finally
-            {
-                WriteableBitmap.Unlock();
-            }
+            Draw(Colors.Pink);
         }
 
-        public void Redraw(int x, int y)
+        public void MoveShape(int x, int y)
         {
             double dx = x - Points[0].X;
             double dy = y - Points[0].Y;
@@ -105,20 +102,7 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            WriteableBitmap.Lock();
-            try
-            {
-                ApplyModifiedDDA(Colors.HotPink);
-            }
-            finally
-            {
-                WriteableBitmap.Unlock();
-            }
-        }
-
-        public void MoveShape()
-        {
-            throw new NotImplementedException();
+            Draw(Colors.Lavender);
         }
 
         void SetPixel(int x, int y, Color color)
