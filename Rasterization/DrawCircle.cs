@@ -13,7 +13,7 @@ namespace Rasterization
         public WriteableBitmap WriteableBitmap { get; set; }
         public Point Center { get; set; }
         public int Radius { get; set; }
-        public List<Point> Points { get; set; }
+        public List<Point> Points = new List<Point>();
 
         public List<Point> GetPoints()
         {
@@ -24,7 +24,7 @@ namespace Rasterization
         public DrawCircle(Point center, Point endPoint)
         {
             Center = center;
-            Radius = MeasureDistance((int)center.X, (int)center.Y, (int)endPoint.X, (int)endPoint.Y);         
+            Radius = MeasureDistance((int)center.X, (int)endPoint.X, (int)center.Y, (int)endPoint.Y);         
         }
 
         int MeasureDistance(int x1, int x2, int y1, int y2)
@@ -83,7 +83,7 @@ namespace Rasterization
                     d += dSE;
                     dE += 2;
                     dSE += 4;
-                    y--;
+                    --y;
                 }
                 ++x;
                 SetPixel(x, y, color);
@@ -103,14 +103,53 @@ namespace Rasterization
             }
         }
 
-        public void EditShape()
+        public void EditShape(int x, int y, int index)
         {
-            throw new NotImplementedException();
+            int newRadius = MeasureDistance((int)Center.X, x, (int)Center.Y, y);
+            Radius = newRadius;
+
+            DeleteShape();
+
+            WriteableBitmap.Lock();
+            try
+            {
+                ApplyMidpointCircle(Colors.Pink);
+            }
+            finally
+            {
+                WriteableBitmap.Unlock();
+            }
         }
 
         public void MoveShape()
         {
             throw new NotImplementedException();
+        }
+
+        public void Redraw(int x, int y)
+        {
+            double dx = x - Points[0].X;
+            double dy = y - Points[0].Y;
+
+            Point newCenter = new Point
+            {
+                X = Points[0].X + dx,
+                Y = Points[0].Y + dy
+            };
+
+            DeleteShape();
+            Points.Clear();
+            Points.Add(newCenter);
+
+            WriteableBitmap.Lock();
+            try
+            {
+                ApplyMidpointCircle(Colors.HotPink);
+            }
+            finally
+            {
+                WriteableBitmap.Unlock();
+            }
         }
     }
 }

@@ -11,22 +11,20 @@ namespace Rasterization
         public string Name { get; set; } = "Polygon";
         public Color Color { get; set; } = Colors.Black;
         public WriteableBitmap WriteableBitmap { get; set; }
-        List<Point> PolyPoints { get; set; }
 
-        public PointCollection Points = new PointCollection();
+        private List<Point> Points = new List<Point>();
+
+        public DrawPolygon(List<Point> points)
+        {
+            foreach(Point p in points)
+            {
+                Points.Add(p);
+            }
+        }
 
         public List<Point> GetPoints()
         {
-            foreach (var o in Points)
-            {
-                PolyPoints.Add(o);
-            }
-            return PolyPoints;
-        }
-
-        public DrawPolygon(PointCollection points)
-        {
-            Points = points;
+            return Points;
         }
 
         public void ApplyModifiedDDA(Color color)
@@ -56,9 +54,66 @@ namespace Rasterization
             }
         }
 
-        public void EditShape()
+        public void EditShape(int x, int y, int index)
         {
-            throw new NotImplementedException();
+            double dx = x - Points[index].X;
+            double dy = y - Points[index].Y;
+
+            Point newPoint = new Point
+            {
+                X = Points[index].X + dx,
+                Y = Points[index].Y + dy
+            };
+
+            DeleteShape();
+
+            Points.RemoveAt(index);
+            Points.Insert(index, newPoint);
+
+            WriteableBitmap.Lock();
+            try
+            {
+                ApplyModifiedDDA(Colors.Pink);
+            }
+            finally
+            {
+                WriteableBitmap.Unlock();
+            }
+        }
+
+        public void Redraw(int x, int y)
+        {
+            double dx = x - Points[0].X;
+            double dy = y - Points[0].Y;
+            List<Point> newPoints = new List<Point>();
+
+            foreach(Point p in Points)
+            {
+                Point newPoint = new Point
+                {
+                    X = p.X + dx,
+                    Y = p.Y + dy
+                };
+                newPoints.Add(newPoint);
+            }
+
+            DeleteShape();
+            Points.Clear();
+            
+            foreach (Point p in newPoints)
+            {
+                Points.Add(p);
+            }
+
+            WriteableBitmap.Lock();
+            try
+            {
+                ApplyModifiedDDA(Colors.HotPink);
+            }
+            finally
+            {
+                WriteableBitmap.Unlock();
+            }
         }
 
         public void MoveShape()

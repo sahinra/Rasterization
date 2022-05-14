@@ -18,9 +18,11 @@ namespace Rasterization
         private List<IDrawnShapes> DrawnShapes = new List<IDrawnShapes>();
         private List<Color> ColorInfo = new List<Color>();
         private WriteableBitmap writeableBitmap;
-        private PointCollection polygonPoints = new PointCollection();
+        private List<Point> polygonPoints = new List<Point>();
         private Color SelectedColor = Colors.Red;
         private int PolygonPointNum = 5;
+        private int selectedIndex = 0;
+        private Point selectedPoint = new Point(); //point to edit
 
         public MainWindow()
         {
@@ -93,13 +95,12 @@ namespace Rasterization
         private int FindMinDistance(Point point, List<Point> points)
         {
             int min = MeasureDistance(point, points[0]);
-            Point nearestPoint = points[0];
+
             foreach (var p in points)
             {
                 if (min > MeasureDistance(point, p))
                 {
                     min = MeasureDistance(point, p);
-                    nearestPoint = p;
                 }
             }
             return min;
@@ -108,21 +109,34 @@ namespace Rasterization
         private int FindNearestShape()
         {
             int indexShape = 0;
-            List<Point> pointsList = new List<Point>();
-            foreach (var o in DrawnShapes)
+            int currDist;
+
+            if (DrawnShapes.Count == 0)
             {
-                pointsList.Add(FindNearestPoint(StartPoint, o.GetPoints()));
-                indexShape = DrawnShapes.IndexOf(o);
+                return -1;
             }
+
+            int minDist = FindMinDistance(StartPoint, DrawnShapes[0].GetPoints());
+
+            foreach (IDrawnShapes o in DrawnShapes)
+            {
+                currDist = FindMinDistance(StartPoint, o.GetPoints());
+                if (currDist < minDist)
+                {
+                    minDist = currDist;
+                    indexShape = DrawnShapes.IndexOf(o);
+                }
+            }
+            //MessageBox.Show(indexShape.ToString());
+            //MessageBox.Show(DrawnShapes.Count.ToString());
             return indexShape;
         }
 
         private void CanvasLeftDown(object sender, MouseButtonEventArgs e)
         {
             StartPoint = e.GetPosition(this);
-            if(DrawingMode == 3)
+            if(DrawingMode == 3) //polygon
             {
-                //polygonPoints.Add(StartPoint);
                 if (polygonPoints.Count < PolygonPointNum)
                 {
                     Point p = e.GetPosition(this);
@@ -130,53 +144,24 @@ namespace Rasterization
                 }
                 else return;
             }
-            if (DrawingMode == 4)
+            if (DrawingMode == 4) //move
             {
-                foreach(var o in DrawnShapes)
-                {
-                    Point movedPoint = FindNearestPoint(StartPoint, o.GetPoints());  
-                }
+                selectedIndex = FindNearestShape();
             }
-            if (DrawingMode == 5)
+            if (DrawingMode == 5) //edit
             {
-                foreach (var o in DrawnShapes)
-                {
-                    Point point = FindNearestPoint(StartPoint, o.GetPoints());
-                    int index = o.GetPoints().IndexOf(point);
-                    Point newPoint = StartPoint;
-                    o.DeleteShape();
-                    DrawnShapes.Remove(o);
-                    o.GetPoints().Insert(index, newPoint);
-                    DrawnShapes.Add(o);
-                    //add redraw
-                }
+                selectedIndex = FindNearestShape();
+                selectedPoint = FindNearestPoint(StartPoint, DrawnShapes[selectedIndex].GetPoints());
             }
-            if (DrawingMode == 6)
+            if (DrawingMode == 6) //delete
             {
 
-            }
-            if (DrawingMode == 7)
-            {
-                MyCanvas.Source = writeableBitmap;
-                DrawnShapes.Clear();
             }
         }
 
         private void CanvasMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed && DrawingMode == 1)
-            {
-                EndPoint = e.GetPosition(this);
-            }
-            if (e.LeftButton == MouseButtonState.Pressed && DrawingMode == 2)
-            {
-                EndPoint = e.GetPosition(this);
-                //Point center = StartPoint;
-                //EndPoint = e.GetPosition(this);
-                //double radius = DistanceOfTwoPoints(center, EndPoint);
-                //ApplyMidpointCircle((int)radius);
-            }
-            if (e.LeftButton == MouseButtonState.Pressed && DrawingMode == 3)
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
                 EndPoint = e.GetPosition(this);
             }
@@ -235,15 +220,17 @@ namespace Rasterization
             }
             if (DrawingMode == 4) //move
             {
-
+                DrawnShapes[selectedIndex].Redraw((int)EndPoint.X, (int)EndPoint.Y);
             }
             if (DrawingMode == 5) //edit
             {
-
+                DrawnShapes[selectedIndex].EditShape((int)EndPoint.X, (int)EndPoint.Y, DrawnShapes[selectedIndex].GetPoints().IndexOf(selectedPoint));
             }
             if (DrawingMode == 6) //delete
             {
-
+                int index = FindNearestShape();
+                DrawnShapes[index].DeleteShape();
+                DrawnShapes.RemoveAt(index);
             }
             if (DrawingMode == 7) //clear all
             {
@@ -284,7 +271,11 @@ namespace Rasterization
 
         private void ClearButtonClick(object sender, RoutedEventArgs e)
         {
-            DrawingMode = 7;
+            foreach(var o in DrawnShapes.ToList())
+            {
+                o.DeleteShape();
+                DrawnShapes.Remove(o);
+            }
         }
     }
 }
