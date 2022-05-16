@@ -7,6 +7,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Reflection;
+using System.IO;
+using System.Xml;
+using Microsoft.Win32;
 
 namespace Rasterization
 {
@@ -23,6 +26,7 @@ namespace Rasterization
         private int PolygonPointNum = 5;
         private int selectedIndex = 0;
         private Point selectedPoint = new Point(); //point to edit
+        private int AntialiasOnOff = 0; //off
 
         public MainWindow()
         {
@@ -275,6 +279,141 @@ namespace Rasterization
             {
                 o.DeleteShape();
                 DrawnShapes.Remove(o);
+            }
+        }
+
+        private void AntialiasButtonClick(object sender, RoutedEventArgs e)
+        {
+            if(AntialiasOnOff == 0)
+            {
+                AntialiasOnOff = 1;
+                aliasButtonText.Text = "Antialias On";
+            }
+            else
+            {
+                AntialiasOnOff = 0;
+                aliasButtonText.Text = "Antialias Off";
+            }
+
+
+        }
+
+        private void SaveButtonClick(object sender, RoutedEventArgs e)
+        {
+            XmlTextWriter writer = new XmlTextWriter("D:/Computer Sciences/Semester 6/Computer Graphics/shapes.xml", System.Text.Encoding.UTF8);
+            writer.WriteStartDocument(true);
+            writer.Formatting = Formatting.Indented;
+            writer.Indentation = 2;
+
+            writer.WriteStartElement("Shapes");
+
+            foreach(IDrawnShapes shape in DrawnShapes)
+            {
+                if ( shape.Name == "Line")
+                {
+                    createNode("Line", shape.GetPoints(), shape.Thickness, shape.Color, writer);
+                }
+                if (shape.Name == "Circle")
+                {
+                    createNode("Circle", shape.GetPoints(), shape.Thickness, shape.Color, writer);
+                }
+                if (shape.Name == "Polygon")
+                {
+                    createNode("Polygon", shape.GetPoints(), shape.Thickness, shape.Color, writer);
+                }
+            }
+
+            writer.WriteEndElement(); //shapes
+            writer.WriteEndDocument();
+            writer.Close();
+            MessageBox.Show("XML File created ! ");
+        }
+
+        private void createNode(string name, List<Point> points, int thickness, Color color, XmlTextWriter writer)
+        {
+            writer.WriteStartElement(name);
+            writer.WriteStartElement("Points");
+            foreach(Point point in points)
+            {
+                writer.WriteStartElement("Point");
+                    writer.WriteStartElement("Point_X");
+                    writer.WriteString(point.X.ToString());
+                    writer.WriteEndElement();
+                    writer.WriteStartElement("Point_Y");
+                    writer.WriteString(point.Y.ToString());
+                    writer.WriteEndElement();
+                writer.WriteEndElement(); //point
+            }
+            writer.WriteStartElement("Color");
+                writer.WriteStartElement("R");
+                writer.WriteString(color.R.ToString());
+                writer.WriteEndElement();
+                writer.WriteStartElement("G");
+                writer.WriteString(color.G.ToString());
+                writer.WriteEndElement();
+                writer.WriteStartElement("B");
+                writer.WriteString(color.B.ToString());
+                writer.WriteEndElement();
+            writer.WriteEndElement(); //color
+            writer.WriteStartElement("Thickness");
+            writer.WriteString(thickness.ToString());
+            writer.WriteEndElement();
+
+            writer.WriteEndElement(); //points
+            writer.WriteEndElement(); //name
+        }
+
+        private void LoadButtonClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.FileName = "Document";
+            dialog.Filter = "XML files(.xml)|*.xml|all Files(*.*)|*.*";
+
+            bool? result = dialog.ShowDialog();
+
+            if (result == true)
+            {
+                foreach (var o in DrawnShapes.ToList())
+                {
+                    //o.DeleteShape();
+                    //DrawnShapes.Remove(o);
+                    //ReadXmlValues(dialog.FileName);
+                }
+            }
+        }
+
+        private void ReadXmlValues(string filename)
+        {
+            using (XmlReader reader = XmlReader.Create(filename))
+            {
+                reader.Read();
+                reader.ReadStartElement("Shapes");
+
+                if (reader.ReadString() == "Line")
+                {
+                    reader.ReadStartElement("Line");
+
+                    reader.ReadEndElement();
+                }
+                reader.ReadStartElement("Line");
+                Console.Write("The content of the title element:  ");
+                Console.WriteLine(reader.ReadString());
+                reader.ReadEndElement();
+                reader.ReadStartElement("price");
+                Console.Write("The content of the price element:  ");
+                Console.WriteLine(reader.ReadString());
+                reader.ReadEndElement();
+                reader.ReadEndElement(); //shapes
+            }
+        }
+
+        private void MySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if(DrawnShapes.Count > 0)
+            {
+                DrawnShapes[selectedIndex].DeleteShape();
+                DrawnShapes[selectedIndex].Thickness = (int)MySlider.Value;
+                DrawnShapes[selectedIndex].Draw(SelectedColor);
             }
         }
     }

@@ -14,6 +14,8 @@ namespace Rasterization
 
         private List<Point> Points = new List<Point>();
 
+        public int Thickness { get; set; } = 1;
+
         public DrawPolygon(List<Point> points)
         {
             foreach(Point p in points)
@@ -150,8 +152,23 @@ namespace Rasterization
 
             for (int i = 1; i <= step; i++)
             {
-                SetPixel((int)startPoint.X, (int)startPoint.Y, color);
-                SetPixel((int)endPoint.X, (int)endPoint.Y, color);
+                if (Thickness <= 3) // 1, 2, 3
+                {
+                    SetPixel((int)startPoint.X, (int)startPoint.Y, color);
+                    SetPixel((int)endPoint.X, (int)endPoint.Y, color);
+                    if (Thickness >= 2) // 2, 3
+                    {
+                        SetPixel((int)startPoint.X + 1, (int)startPoint.Y + 1, color);
+                        SetPixel((int)endPoint.X + 1, (int)endPoint.Y + 1, color);
+                        if (Thickness == 3) // 3
+                        {
+                            SetPixel((int)startPoint.X + 2, (int)startPoint.Y + 2, color);
+                            SetPixel((int)endPoint.X + 2, (int)endPoint.Y + 2, color);
+                        }
+                    }
+                }
+                //SetPixel((int)startPoint.X, (int)startPoint.Y, color);
+                //SetPixel((int)endPoint.X, (int)endPoint.Y, color);
 
                 startPoint.X += distanceX;
                 startPoint.Y += distanceY;

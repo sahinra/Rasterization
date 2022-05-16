@@ -9,7 +9,9 @@ namespace Rasterization
     {
         string Name { get; set; }
         Color Color { get; set; }
+        int Thickness { get; set; }
         WriteableBitmap WriteableBitmap { get; set; }
+        void Draw(Color color);
         List<Point> GetPoints();
         void DeleteShape();
         void MoveShape(int x, int y);

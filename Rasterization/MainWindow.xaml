@@ -15,7 +15,7 @@
     
     <Window.Resources>
         <Style x:Key="ButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Height" Value="35"/>
             <Setter Property="Width" Value="60"/>
             <Setter Property="Margin" Value="5"/>
         </Style>
@@ -39,7 +39,7 @@
             <Setter Property="Height" Value="20"/>
             <Setter Property="Width" Value="100"/>
             <Setter Property="Margin" Value="5,0,5,0"/>
-            <Setter Property="IsEnabled" Value="False"/>
+            <!--<Setter Property="IsEnabled" Value="False"/>-->
             <Setter Property="Minimum" Value="1"/>
             <Setter Property="Maximum" Value="3"/>
         </Style>
@@ -90,11 +90,15 @@
                                   x:Name="MyColorComboBox"
                                   Style="{StaticResource ComboBoxStyle}"
                                   ItemsSource ="{Binding}"
-                                  SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}" />
+                                  SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}"/>
                     <Slider Grid.Column="1"
                                 Grid.Row="1"
                                 x:Name="MySlider"
-                                Style="{StaticResource SliderStyle}"/>
+                                Style="{StaticResource SliderStyle}"
+
+                                TickFrequency="1"
+                                IsSnapToTickEnabled="True"
+                                ValueChanged="MySlider_ValueChanged"/>
                 </Grid>
                 
                 <Button x:Name="MoveButton" Style="{StaticResource ButtonStyle}" Click="MoveButtonClick">
@@ -103,7 +107,16 @@
                 <Button x:Name="EditButton" Style="{StaticResource ButtonStyle}" Click="EditButtonClick">
                     <TextBlock Text="Edit" Style="{StaticResource ButtonTextBlockStyle}"/>
                 </Button>
-                
+                <Button x:Name="AntiAliasButton" Style="{StaticResource ButtonStyle}" Click="AntialiasButtonClick">
+                    <TextBlock x:Name="aliasButtonText" Text="Antialias Off" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Button x:Name="SaveButton" Style="{StaticResource ButtonStyle}" Click="SaveButtonClick">
+                    <TextBlock Text="Save" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+                <Button x:Name="LoadButton" Style="{StaticResource ButtonStyle}" Click="LoadButtonClick">
+                    <TextBlock Text="Load" Style="{StaticResource ButtonTextBlockStyle}"/>
+                </Button>
+
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
                 <Button x:Name="DeleteButton" Style="{StaticResource ButtonStyle}" Click="DeleteButtonClick">

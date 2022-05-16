@@ -11,20 +11,21 @@ namespace Rasterization
         public string Name { get; set; } = "Circle";
         public Color Color { get; set; } = Colors.Black;
         public WriteableBitmap WriteableBitmap { get; set; }
-        public Point Center { get; set; }
         public int Radius { get; set; }
+
         public List<Point> Points = new List<Point>();
 
-        public List<Point> GetPoints()
-        {
-            Points.Add(Center);
-            return Points;
-        }
+        public int Thickness { get; set; } = 1;
 
         public DrawCircle(Point center, Point endPoint)
         {
-            Center = center;
-            Radius = MeasureDistance((int)center.X, (int)endPoint.X, (int)center.Y, (int)endPoint.Y);         
+            Points.Add(center);
+            Radius = MeasureDistance((int)center.X, (int)endPoint.X, (int)center.Y, (int)endPoint.Y);
+        }
+
+        public List<Point> GetPoints()
+        {
+            return Points;
         }
 
         int MeasureDistance(int x1, int x2, int y1, int y2)
@@ -56,19 +57,38 @@ namespace Rasterization
             WriteableBitmap.AddDirtyRect(new Int32Rect(x, y, 1, 1));
         }
 
+
+        public void midpoint(Color color)
+        {
+            Color = color;
+            int R = Radius;
+            int P = 1 - R;
+            int X = 0;
+            int Y = 0;
+            if(P < 0)
+            {
+                X += 1;
+                P += 2 * X + 1;
+            }
+            else
+            {
+                X += 1;
+                Y -= 1;
+                P += (2 * X) + 1 - (2 * Y);
+            }
+        }
+
+
         public void ApplyMidpointCircle(Color color)
         {
             Color = color;
             int R = Radius;
             int dE = 3;
-            int num = 5;
-            int r2 = 2 * R;
-            int r3 = 1;
-            int r4 = 2 * R;
-            int dSE = num - r2;
-            int d = r3 - r4;
+            int dSE = 5 - (2 * R);
+            int d = 1 - R;
             int x = 0;
             int y = R;
+
             SetPixel(x, y, Color);
             while (y > x)
             {
@@ -86,7 +106,19 @@ namespace Rasterization
                     --y;
                 }
                 ++x;
-                SetPixel(x, y, color);
+                if (Thickness <= 3) // 1, 2, 3
+                {
+                    SetPixel(x, y, color);
+                    if (Thickness >= 2) // 2, 3
+                    {
+                        SetPixel(x + 1, y + 1, color);
+                        if (Thickness == 3) // 3
+                        {
+                            SetPixel(x + 2, y + 2, color);
+                        }
+                    }
+                }
+                //SetPixel(x, y, color);
             }
         }
 
@@ -110,7 +142,7 @@ namespace Rasterization
 
         public void EditShape(int x, int y, int index)
         {
-            int newRadius = MeasureDistance((int)Center.X, x, (int)Center.Y, y);
+            int newRadius = MeasureDistance((int)Points[0].X, x, (int)Points[0].Y, y);
             Radius = newRadius;
 
             DeleteShape();
@@ -130,6 +162,7 @@ namespace Rasterization
             };
 
             DeleteShape();
+
             Points.Clear();
             Points.Add(newCenter);
 

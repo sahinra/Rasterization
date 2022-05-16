@@ -11,21 +11,18 @@ namespace Rasterization
         public string Name { get; set; } = "Line";
         public Color Color { get; set; } = Colors.Black;
         public WriteableBitmap WriteableBitmap { get; set; }
-        public Point StartPoint {get; set;}
-        public Point EndPoint { get; set; }
 
         public List<Point> Points = new List<Point>();
+        public int Thickness { get; set; } = 1;
 
         public DrawLine(Point startPoint, Point endPoint)
         {
-            StartPoint = startPoint;
-            EndPoint = endPoint;
+            Points.Add(startPoint);
+            Points.Add(endPoint);
         }
 
         public List<Point> GetPoints()
         {
-            Points.Add(StartPoint);
-            Points.Add(EndPoint);
             return Points;
         }
 
@@ -55,8 +52,8 @@ namespace Rasterization
 
         public void ApplyDDA(Color color)
         {
-            Point startPoint = StartPoint;
-            Point endPoint = EndPoint;
+            Point startPoint = Points[0];
+            Point endPoint = Points[1];
             Color = color;
             double distanceX = endPoint.X - startPoint.X;
             double distanceY = endPoint.Y - startPoint.Y;
@@ -77,8 +74,29 @@ namespace Rasterization
 
             for (int i = 1; i <= step; i++)
             {
-                SetPixel((int)startPoint.X, (int)startPoint.Y, color);
-                SetPixel((int)endPoint.X, (int)endPoint.Y, color);
+                if(Thickness <= 3) // 1, 2, 3
+                {
+                    SetPixel((int)startPoint.X, (int)startPoint.Y, color);
+                    SetPixel((int)endPoint.X, (int)endPoint.Y, color);
+                    if(Thickness >= 2) // 2, 3
+                    {
+                        SetPixel((int)startPoint.X + 1, (int)startPoint.Y + 1, color);
+                        SetPixel((int)endPoint.X + 1, (int)endPoint.Y + 1, color);
+                        if(Thickness == 3) // 3
+                        {
+                            SetPixel((int)startPoint.X + 2, (int)startPoint.Y + 2, color);
+                            SetPixel((int)endPoint.X + 2, (int)endPoint.Y + 2, color);
+                        }
+                    }
+                }
+
+
+                //SetPixel((int)startPoint.X, (int)startPoint.Y, color);
+                //SetPixel((int)endPoint.X, (int)endPoint.Y, color);
+                //SetPixel((int)startPoint.X + 1, (int)startPoint.Y + 1, color);
+                //SetPixel((int)endPoint.X + 1, (int)endPoint.Y + 1, color);
+                //SetPixel((int)startPoint.X + 2, (int)startPoint.Y + 2, color);
+                //SetPixel((int)endPoint.X + 2, (int)endPoint.Y + 2, color);
 
                 startPoint.X += distanceX;
                 startPoint.Y += distanceY;
