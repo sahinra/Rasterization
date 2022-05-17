@@ -9,7 +9,7 @@ namespace Rasterization
     class DrawPolygon : IDrawnShapes
     {
         public string Name { get; set; } = "Polygon";
-        public Color Color { get; set; } = Colors.Black;
+        public Color Color { get; set; } = Colors.Red;
         public WriteableBitmap WriteableBitmap { get; set; }
 
         private List<Point> Points = new List<Point>();
@@ -77,7 +77,7 @@ namespace Rasterization
             Points.RemoveAt(index);
             Points.Insert(index, newPoint);
 
-            Draw(Colors.Pink);
+            Draw(Colors.Red);
         }
 
         public void MoveShape(int x, int y)
@@ -104,7 +104,7 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            Draw(Colors.Lavender);
+            Draw(Colors.Red);
         }
 
         void SetPixel(int x, int y, Color color)

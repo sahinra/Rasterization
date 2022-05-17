@@ -9,7 +9,7 @@ namespace Rasterization
     class DrawCircle : IDrawnShapes
     {
         public string Name { get; set; } = "Circle";
-        public Color Color { get; set; } = Colors.Black;
+        public Color Color { get; set; } = Colors.Red;
         public WriteableBitmap WriteableBitmap { get; set; }
         public int Radius { get; set; }
 
@@ -62,19 +62,63 @@ namespace Rasterization
         {
             Color = color;
             int R = Radius;
-            int P = 1 - R;
-            int X = 0;
-            int Y = 0;
-            if(P < 0)
+            int d = 1 - R;
+            int x = Radius;
+            int y = 0;
+            //if(d < 0)
+            //{
+            //    x += 1;
+            //    d += 2 * x + 1;
+            //}
+            //else
+            //{
+            //    x += 1;
+            //    y -= 1;
+            //    d += (2 * x) + 1 - (2 * y);
+            //}
+
+
+            while (y < x)
             {
-                X += 1;
-                P += 2 * X + 1;
-            }
-            else
-            {
-                X += 1;
-                Y -= 1;
-                P += (2 * X) + 1 - (2 * Y);
+                y++;
+                if (d <= 0)
+                {
+                    d = d + 2 * y + 1;
+                }
+                else
+                {
+                    x--;
+                    d = d + 2 * y - 2 * x + 1;
+                }
+
+                if (x < y)
+                    break;
+
+                Points.Add(new Point(x + Points[0].X, y + Points[0].Y));
+                Points.Add(new Point(-x + Points[0].X, y + Points[0].Y));
+                Points.Add(new Point(x + Points[0].X, -y + Points[0].Y));
+                Points.Add(new Point(-x + Points[0].X, -y + Points[0].Y));
+
+                if (x != y)
+                {
+                    Points.Add(new Point(y + Points[0].X, x + Points[0].Y));
+                    Points.Add(new Point(-y + Points[0].X, x + Points[0].Y));
+                    Points.Add(new Point(y + Points[0].X, -x + Points[0].Y));
+                    Points.Add(new Point(-y + Points[0].X, -x + Points[0].Y));
+
+                }
+                if (Thickness <= 3) // 1, 2, 3
+                {
+                    SetPixel(x, y, color);
+                    if (Thickness >= 2) // 2, 3
+                    {
+                        SetPixel(x + 1, y + 1, color);
+                        if (Thickness == 3) // 3
+                        {
+                            SetPixel(x + 2, y + 2, color);
+                        }
+                    }
+                }
             }
         }
 
@@ -132,6 +176,11 @@ namespace Rasterization
             try
             {
                 ApplyMidpointCircle(color);
+                foreach (var point in Points)
+                {
+                    SetPixel((int)point.X, (int)point.Y, Color);
+
+                }
             }
             finally
             {
@@ -146,7 +195,7 @@ namespace Rasterization
 
             DeleteShape();
 
-            Draw(Colors.Pink);
+            Draw(Colors.Red);
         }
 
         public void MoveShape(int x, int y)
@@ -165,7 +214,7 @@ namespace Rasterization
             Points.Clear();
             Points.Add(newCenter);
 
-            Draw(Colors.Violet);
+            Draw(Colors.Red);
         }
     }
 }

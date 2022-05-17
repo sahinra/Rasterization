@@ -9,7 +9,7 @@ namespace Rasterization
     class DrawLine : IDrawnShapes
     {
         public string Name { get; set; } = "Line";
-        public Color Color { get; set; } = Colors.Black;
+        public Color Color { get; set; } = Colors.Red;
         public WriteableBitmap WriteableBitmap { get; set; }
 
         public List<Point> Points = new List<Point>();
@@ -129,7 +129,7 @@ namespace Rasterization
             Points.RemoveAt(index);
             Points.Insert(index, newPoint);
 
-            Draw(Colors.Pink);
+            Draw(Colors.Red);
         }
 
         public void MoveShape(int x, int y)
@@ -156,7 +156,7 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            Draw(Colors.Blue);
+            Draw(Colors.Red);
         }
     }
 }

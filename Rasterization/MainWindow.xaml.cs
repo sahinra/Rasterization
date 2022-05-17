@@ -32,6 +32,7 @@ namespace Rasterization
         public MainWindow()
         {
             InitializeComponent();
+            MyColorComboBox.SelectionChanged += new SelectionChangedEventHandler(ColorComboBoxSelectionChanged);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -69,6 +70,14 @@ namespace Rasterization
 
                 MyColorComboBox.Items.Add(comboBoxItem);
             }
+        }
+
+        void ColorComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var currentSelectedIndex = MyColorComboBox.SelectedIndex;
+            SelectedColor = ColorInfo[currentSelectedIndex];
+            DrawnShapes[selectedIndex].DeleteShape();
+            DrawnShapes[selectedIndex].Draw(SelectedColor);
         }
 
         private int MeasureDistance(Point p1, Point p2)
@@ -184,7 +193,7 @@ namespace Rasterization
                 {
                     DrawCircle circle = new DrawCircle(StartPoint, EndPoint);
                     circle.WriteableBitmap = writeableBitmap;
-                    circle.ApplyMidpointCircle(SelectedColor);
+                    circle.midpoint(SelectedColor);
                     DrawnShapes.Add(circle);
                 }
                 finally
