@@ -118,7 +118,6 @@ namespace Rasterization
                         }
                     }
                 }
-                //SetPixel(x, y, color);
             }
         }
 

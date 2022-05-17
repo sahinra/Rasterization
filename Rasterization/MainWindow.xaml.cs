@@ -7,7 +7,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Reflection;
-using System.IO;
 using System.Xml;
 using Microsoft.Win32;
 
@@ -18,13 +17,15 @@ namespace Rasterization
         private Point StartPoint;
         private Point EndPoint;
         int DrawingMode = 8; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Disabled
-        private List<IDrawnShapes> DrawnShapes = new List<IDrawnShapes>();
-        private List<Color> ColorInfo = new List<Color>();
-        private WriteableBitmap writeableBitmap;
-        private List<Point> polygonPoints = new List<Point>();
-        private Color SelectedColor = Colors.Red;
         private int PolygonPointNum = 5;
         private int selectedIndex = 0;
+
+        private List<IDrawnShapes> DrawnShapes = new List<IDrawnShapes>();
+        private List<Color> ColorInfo = new List<Color>();
+        private Color SelectedColor = Colors.Red;
+
+        private WriteableBitmap writeableBitmap;
+        private List<Point> polygonPoints = new List<Point>();     
         private Point selectedPoint = new Point(); //point to edit
         private int AntialiasOnOff = 0; //off
 
@@ -68,12 +69,6 @@ namespace Rasterization
 
                 MyColorComboBox.Items.Add(comboBoxItem);
             }
-        }
-
-        //https://stackoverflow.com/questions/4662193/how-to-convert-from-system-drawing-color-to-system-windows-media-color
-        private System.Drawing.Color ConvertColor(System.Windows.Media.Color color)
-        {
-            return System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B);
         }
 
         private int MeasureDistance(Point p1, Point p2)
@@ -131,8 +126,6 @@ namespace Rasterization
                     indexShape = DrawnShapes.IndexOf(o);
                 }
             }
-            //MessageBox.Show(indexShape.ToString());
-            //MessageBox.Show(DrawnShapes.Count.ToString());
             return indexShape;
         }
 
@@ -156,10 +149,6 @@ namespace Rasterization
             {
                 selectedIndex = FindNearestShape();
                 selectedPoint = FindNearestPoint(StartPoint, DrawnShapes[selectedIndex].GetPoints());
-            }
-            if (DrawingMode == 6) //delete
-            {
-
             }
         }
 
@@ -236,10 +225,6 @@ namespace Rasterization
                 DrawnShapes[index].DeleteShape();
                 DrawnShapes.RemoveAt(index);
             }
-            if (DrawingMode == 7) //clear all
-            {
-
-            }
             return;
         }
 
@@ -311,49 +296,49 @@ namespace Rasterization
             {
                 if ( shape.Name == "Line")
                 {
-                    createNode("Line", shape.GetPoints(), shape.Thickness, shape.Color, writer);
+                    CreateNode("Line", shape.GetPoints(), shape.Thickness, shape.Color, writer);
                 }
                 if (shape.Name == "Circle")
                 {
-                    createNode("Circle", shape.GetPoints(), shape.Thickness, shape.Color, writer);
+                    CreateNode("Circle", shape.GetPoints(), shape.Thickness, shape.Color, writer);
                 }
                 if (shape.Name == "Polygon")
                 {
-                    createNode("Polygon", shape.GetPoints(), shape.Thickness, shape.Color, writer);
+                    CreateNode("Polygon", shape.GetPoints(), shape.Thickness, shape.Color, writer);
                 }
             }
 
             writer.WriteEndElement(); //shapes
             writer.WriteEndDocument();
             writer.Close();
-            MessageBox.Show("XML File created ! ");
+            _ = MessageBox.Show("XML File created ! ");
         }
 
-        private void createNode(string name, List<Point> points, int thickness, Color color, XmlTextWriter writer)
+        private void CreateNode(string name, List<Point> points, int thickness, Color color, XmlTextWriter writer)
         {
             writer.WriteStartElement(name);
             writer.WriteStartElement("Points");
             foreach(Point point in points)
             {
                 writer.WriteStartElement("Point");
-                    writer.WriteStartElement("Point_X");
-                    writer.WriteString(point.X.ToString());
-                    writer.WriteEndElement();
-                    writer.WriteStartElement("Point_Y");
-                    writer.WriteString(point.Y.ToString());
-                    writer.WriteEndElement();
+                writer.WriteStartElement("Point_X");
+                writer.WriteString(point.X.ToString());
+                writer.WriteEndElement();
+                writer.WriteStartElement("Point_Y");
+                writer.WriteString(point.Y.ToString());
+                writer.WriteEndElement();
                 writer.WriteEndElement(); //point
             }
             writer.WriteStartElement("Color");
-                writer.WriteStartElement("R");
-                writer.WriteString(color.R.ToString());
-                writer.WriteEndElement();
-                writer.WriteStartElement("G");
-                writer.WriteString(color.G.ToString());
-                writer.WriteEndElement();
-                writer.WriteStartElement("B");
-                writer.WriteString(color.B.ToString());
-                writer.WriteEndElement();
+            writer.WriteStartElement("R");
+            writer.WriteString(color.R.ToString());
+            writer.WriteEndElement();
+            writer.WriteStartElement("G");
+            writer.WriteString(color.G.ToString());
+            writer.WriteEndElement();
+            writer.WriteStartElement("B");
+            writer.WriteString(color.B.ToString());
+            writer.WriteEndElement();
             writer.WriteEndElement(); //color
             writer.WriteStartElement("Thickness");
             writer.WriteString(thickness.ToString());

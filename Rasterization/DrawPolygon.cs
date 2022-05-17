@@ -167,8 +167,6 @@ namespace Rasterization
                         }
                     }
                 }
-                //SetPixel((int)startPoint.X, (int)startPoint.Y, color);
-                //SetPixel((int)endPoint.X, (int)endPoint.Y, color);
 
                 startPoint.X += distanceX;
                 startPoint.Y += distanceY;

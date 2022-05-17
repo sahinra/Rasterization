@@ -39,7 +39,6 @@
             <Setter Property="Height" Value="20"/>
             <Setter Property="Width" Value="100"/>
             <Setter Property="Margin" Value="5,0,5,0"/>
-            <!--<Setter Property="IsEnabled" Value="False"/>-->
             <Setter Property="Minimum" Value="1"/>
             <Setter Property="Maximum" Value="3"/>
         </Style>
@@ -49,7 +48,6 @@
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="Margin" Value="5,0,5,0"/>
             <Setter Property="FontSize" Value="11"/>
-            <!--<Setter Property="IsEnabled" Value="False"/>-->
         </Style>
         <local:ColorToBrushConverter x:Key="colorToBrushConverter"/>
     </Window.Resources>
@@ -90,7 +88,8 @@
                                   x:Name="MyColorComboBox"
                                   Style="{StaticResource ComboBoxStyle}"
                                   ItemsSource ="{Binding}"
-                                  SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}"/>
+                                  SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}"
+                                  SelectedValue=""/>
                     <Slider Grid.Column="1"
                                 Grid.Row="1"
                                 x:Name="MySlider"

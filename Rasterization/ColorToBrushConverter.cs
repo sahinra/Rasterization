@@ -33,29 +33,6 @@ namespace Rasterization
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
-            //List<Color> ColorInformations = new List<Color>();
-            //var properties = typeof(Colors).GetProperties(BindingFlags.Static | BindingFlags.Public);
-            //ColorInformations = properties.Select(prop =>
-            //{
-            //    return (Color)prop.GetValue(null, null);
-            //}).ToList();
-
-            //SolidColorBrush solidColorBrush = new SolidColorBrush();
-            //solidColorBrush.Color = ColorInformations[(int)value];
-            //return solidColorBrush;
         }
-
-        //public object Convert(object value, Type targetType,
-        //object parameter, CultureInfo culture)
-        //{
-        //    if (!(value is Color ) )
-        //        return null ;
-        //    return new SolidColorBrush((Color ) value);
-        //}
-        //public object ConvertBack(object value, Type targetType,
-        //object parameter, CultureInfo culture)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }
