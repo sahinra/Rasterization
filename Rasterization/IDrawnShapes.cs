@@ -5,7 +5,7 @@ using System.Windows.Media.Imaging;
 
 namespace Rasterization
 {
-    interface IDrawnShapes
+    public interface IDrawnShapes
     {
         string Name { get; set; }
         Color Color { get; set; }

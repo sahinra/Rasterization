@@ -70,6 +70,7 @@
     <Compile Include="DrawCircle.cs" />
     <Compile Include="DrawLine.cs" />
     <Compile Include="DrawPolygon.cs" />
+    <Compile Include="DrawRectangle.cs" />
     <Compile Include="IDrawnShapes.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

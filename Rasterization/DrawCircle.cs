@@ -20,7 +20,9 @@ namespace Rasterization
         public DrawCircle(Point center, Point endPoint)
         {
             Points.Add(center);
+
             Radius = MeasureDistance((int)center.X, (int)endPoint.X, (int)center.Y, (int)endPoint.Y);
+            Points.Add(endPoint);
         }
 
         public List<Point> GetPoints()
@@ -57,72 +59,6 @@ namespace Rasterization
             WriteableBitmap.AddDirtyRect(new Int32Rect(x, y, 1, 1));
         }
 
-
-        public void midpoint(Color color)
-        {
-            Color = color;
-            int R = Radius;
-            int d = 1 - R;
-            int x = Radius;
-            int y = 0;
-            //if(d < 0)
-            //{
-            //    x += 1;
-            //    d += 2 * x + 1;
-            //}
-            //else
-            //{
-            //    x += 1;
-            //    y -= 1;
-            //    d += (2 * x) + 1 - (2 * y);
-            //}
-
-
-            while (y < x)
-            {
-                y++;
-                if (d <= 0)
-                {
-                    d = d + 2 * y + 1;
-                }
-                else
-                {
-                    x--;
-                    d = d + 2 * y - 2 * x + 1;
-                }
-
-                if (x < y)
-                    break;
-
-                Points.Add(new Point(x + Points[0].X, y + Points[0].Y));
-                Points.Add(new Point(-x + Points[0].X, y + Points[0].Y));
-                Points.Add(new Point(x + Points[0].X, -y + Points[0].Y));
-                Points.Add(new Point(-x + Points[0].X, -y + Points[0].Y));
-
-                if (x != y)
-                {
-                    Points.Add(new Point(y + Points[0].X, x + Points[0].Y));
-                    Points.Add(new Point(-y + Points[0].X, x + Points[0].Y));
-                    Points.Add(new Point(y + Points[0].X, -x + Points[0].Y));
-                    Points.Add(new Point(-y + Points[0].X, -x + Points[0].Y));
-
-                }
-                if (Thickness <= 3) // 1, 2, 3
-                {
-                    SetPixel(x, y, color);
-                    if (Thickness >= 2) // 2, 3
-                    {
-                        SetPixel(x + 1, y + 1, color);
-                        if (Thickness == 3) // 3
-                        {
-                            SetPixel(x + 2, y + 2, color);
-                        }
-                    }
-                }
-            }
-        }
-
-
         public void ApplyMidpointCircle(Color color)
         {
             Color = color;
@@ -136,13 +72,13 @@ namespace Rasterization
             SetPixel(x, y, Color);
             while (y > x)
             {
-                if (d < 0) //move to E
+                if (d < 0)
                 {
                     d += dE;
                     dE += 2;
                     dSE += 2;
                 }
-                else //move to SE
+                else
                 {
                     d += dSE;
                     dE += 2;
@@ -150,15 +86,42 @@ namespace Rasterization
                     --y;
                 }
                 ++x;
+
                 if (Thickness <= 3) // 1, 2, 3
                 {
-                    SetPixel(x, y, color);
+                    SetPixel((int)(x + Points[0].X), y + (int)Points[0].Y, color); //bottom
+                    SetPixel((int)(-x + Points[0].X), y + (int)Points[0].Y, color); //bottom
+                    SetPixel((int)(x + Points[0].X), -y + (int)Points[0].Y, color); //top
+                    SetPixel((int)(-x + Points[0].X), -y + (int)Points[0].Y, color); //top
+
+                    SetPixel((int)(y + Points[0].X), x + (int)Points[0].Y, color); //right
+                    SetPixel((int)(y + Points[0].X), -x + (int)Points[0].Y, color); //right
+                    SetPixel((int)(-y + Points[0].X), x + (int)Points[0].Y, color); //left              
+                    SetPixel((int)(-y + Points[0].X), -x + (int)Points[0].Y, color); //left
+
                     if (Thickness >= 2) // 2, 3
                     {
-                        SetPixel(x + 1, y + 1, color);
+                        SetPixel((int)(x + Points[0].X), y + (int)Points[0].Y + 1, color);
+                        SetPixel((int)(-x + Points[0].X), y + (int)Points[0].Y + 1, color);
+                        SetPixel((int)(x + Points[0].X), -y + (int)Points[0].Y - 1, color);
+                        SetPixel((int)(-x + Points[0].X), -y + (int)Points[0].Y - 1, color);
+
+                        SetPixel((int)(y + Points[0].X + 1), x + (int)Points[0].Y, color);
+                        SetPixel((int)(y + Points[0].X + 1), -x + (int)Points[0].Y, color);
+                        SetPixel((int)(-y + Points[0].X - 1), x + (int)Points[0].Y, color);                       
+                        SetPixel((int)(-y + Points[0].X - 1), -x + (int)Points[0].Y, color);
+
                         if (Thickness == 3) // 3
                         {
-                            SetPixel(x + 2, y + 2, color);
+                            SetPixel((int)(x + Points[0].X), y + (int)Points[0].Y + 2, color);
+                            SetPixel((int)(-x + Points[0].X), y + (int)Points[0].Y + 2, color);
+                            SetPixel((int)(x + Points[0].X), -y + (int)Points[0].Y - 2, color);
+                            SetPixel((int)(-x + Points[0].X), -y + (int)Points[0].Y - 2, color);
+
+                            SetPixel((int)(y + Points[0].X) + 2, x + (int)Points[0].Y, color);
+                            SetPixel((int)(y + Points[0].X) + 2, -x + (int)Points[0].Y, color);
+                            SetPixel((int)(-y + Points[0].X) - 2, x + (int)Points[0].Y, color);                           
+                            SetPixel((int)(-y + Points[0].X) - 2, -x + (int)Points[0].Y, color);
                         }
                     }
                 }
@@ -176,11 +139,6 @@ namespace Rasterization
             try
             {
                 ApplyMidpointCircle(color);
-                foreach (var point in Points)
-                {
-                    SetPixel((int)point.X, (int)point.Y, Color);
-
-                }
             }
             finally
             {
@@ -190,11 +148,10 @@ namespace Rasterization
 
         public void EditShape(int x, int y, int index)
         {
+            DeleteShape();
             int newRadius = MeasureDistance((int)Points[0].X, x, (int)Points[0].Y, y);
             Radius = newRadius;
-
-            DeleteShape();
-
+            
             Draw(Colors.Red);
         }
 
@@ -211,8 +168,8 @@ namespace Rasterization
 
             DeleteShape();
 
-            Points.Clear();
-            Points.Add(newCenter);
+            Points.RemoveAt(0);
+            Points.Insert(0, newCenter);
 
             Draw(Colors.Red);
         }

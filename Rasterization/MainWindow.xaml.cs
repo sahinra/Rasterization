@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Win32;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace Rasterization
 {
@@ -16,7 +18,8 @@ namespace Rasterization
     {
         private Point StartPoint;
         private Point EndPoint;
-        int DrawingMode = 8; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Disabled
+        int DrawingMode = 13; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Rectangle,
+                             // 9-Select Rect, 10-Select Poly, 11-Clip, 12-Fill, 13-Disabled, 
         private int PolygonPointNum = 5;
         private int selectedIndex = 0;
 
@@ -140,12 +143,12 @@ namespace Rasterization
 
         private void CanvasLeftDown(object sender, MouseButtonEventArgs e)
         {
-            StartPoint = e.GetPosition(this);
+            StartPoint = e.GetPosition(MyCanvas);
             if(DrawingMode == 3) //polygon
             {
                 if (polygonPoints.Count < PolygonPointNum)
                 {
-                    Point p = e.GetPosition(this);
+                    Point p = e.GetPosition(MyCanvas);
                     polygonPoints.Add(p);
                 }
                 else return;
@@ -165,7 +168,7 @@ namespace Rasterization
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                EndPoint = e.GetPosition(this);
+                EndPoint = e.GetPosition(MyCanvas);
             }
         }
 
@@ -177,6 +180,7 @@ namespace Rasterization
                 try
                 {
                     DrawLine line = new DrawLine(StartPoint, EndPoint);
+                    line.Color = SelectedColor;
                     line.WriteableBitmap = writeableBitmap;
                     line.ApplyDDA(SelectedColor);
                     DrawnShapes.Add(line);
@@ -193,7 +197,7 @@ namespace Rasterization
                 {
                     DrawCircle circle = new DrawCircle(StartPoint, EndPoint);
                     circle.WriteableBitmap = writeableBitmap;
-                    circle.midpoint(SelectedColor);
+                    circle.ApplyMidpointCircle(SelectedColor);
                     DrawnShapes.Add(circle);
                 }
                 finally
@@ -234,6 +238,21 @@ namespace Rasterization
                 DrawnShapes[index].DeleteShape();
                 DrawnShapes.RemoveAt(index);
             }
+            if (DrawingMode == 8) //rect
+            {
+                writeableBitmap.Lock();
+                try
+                {
+                    DrawRectangle rect = new DrawRectangle(StartPoint, EndPoint);
+                    rect.WriteableBitmap = writeableBitmap;
+                    rect.RectangleDrawing(SelectedColor);
+                    DrawnShapes.Add(rect);
+                }
+                finally
+                {
+                    writeableBitmap.Unlock();
+                }
+            }
             return;
         }
 
@@ -262,6 +281,31 @@ namespace Rasterization
             DrawingMode = 5;
         }
 
+        private void RectButtonClick(object sender, RoutedEventArgs e)
+        {
+            DrawingMode = 8;
+        }
+
+        private void SelectRectButtonClick(object sender, RoutedEventArgs e)
+        {
+            DrawingMode = 9;
+        }
+
+        private void SelectPolyButtonClick(object sender, RoutedEventArgs e)
+        {
+            DrawingMode = 10;
+        }
+
+        private void ClipButtonClick(object sender, RoutedEventArgs e)
+        {
+            DrawingMode = 11;
+        }
+
+        private void FillButtonClick(object sender, RoutedEventArgs e)
+        {
+            DrawingMode = 12;
+        }
+
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
         {
             DrawingMode = 6;
@@ -274,6 +318,7 @@ namespace Rasterization
                 o.DeleteShape();
                 DrawnShapes.Remove(o);
             }
+            MySlider.Value = 0;
         }
 
         private void AntialiasButtonClick(object sender, RoutedEventArgs e)
@@ -288,73 +333,43 @@ namespace Rasterization
                 AntialiasOnOff = 0;
                 aliasButtonText.Text = "Antialias Off";
             }
+        }
 
-
+        public struct SeralizedShapes {
+            public string Name;
+            public List<Point> Points;
+            public Color Color;
+            public int Thickness;
         }
 
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            XmlTextWriter writer = new XmlTextWriter("D:/Computer Sciences/Semester 6/Computer Graphics/shapes.xml", System.Text.Encoding.UTF8);
-            writer.WriteStartDocument(true);
-            writer.Formatting = Formatting.Indented;
-            writer.Indentation = 2;
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.FileName = "Document";
+            saveFileDialog.Filter = "XML files(.xml)|*.xml|all Files(*.*)|*.*";
 
-            writer.WriteStartElement("Shapes");
-
-            foreach(IDrawnShapes shape in DrawnShapes)
+            List<SeralizedShapes> seralizedShapes = new List<SeralizedShapes>();
+            foreach(var item in DrawnShapes)
             {
-                if ( shape.Name == "Line")
+                SeralizedShapes newItem = new SeralizedShapes
                 {
-                    CreateNode("Line", shape.GetPoints(), shape.Thickness, shape.Color, writer);
-                }
-                if (shape.Name == "Circle")
-                {
-                    CreateNode("Circle", shape.GetPoints(), shape.Thickness, shape.Color, writer);
-                }
-                if (shape.Name == "Polygon")
-                {
-                    CreateNode("Polygon", shape.GetPoints(), shape.Thickness, shape.Color, writer);
-                }
+                    Name = item.Name,
+                    Points = item.GetPoints(),
+                    Color = item.Color,
+                    Thickness = item.Thickness
+                };
+
+                seralizedShapes.Add(newItem);
             }
 
-            writer.WriteEndElement(); //shapes
-            writer.WriteEndDocument();
-            writer.Close();
-            _ = MessageBox.Show("XML File created ! ");
-        }
-
-        private void CreateNode(string name, List<Point> points, int thickness, Color color, XmlTextWriter writer)
-        {
-            writer.WriteStartElement(name);
-            writer.WriteStartElement("Points");
-            foreach(Point point in points)
+            if(saveFileDialog.ShowDialog() == true)
             {
-                writer.WriteStartElement("Point");
-                writer.WriteStartElement("Point_X");
-                writer.WriteString(point.X.ToString());
-                writer.WriteEndElement();
-                writer.WriteStartElement("Point_Y");
-                writer.WriteString(point.Y.ToString());
-                writer.WriteEndElement();
-                writer.WriteEndElement(); //point
-            }
-            writer.WriteStartElement("Color");
-            writer.WriteStartElement("R");
-            writer.WriteString(color.R.ToString());
-            writer.WriteEndElement();
-            writer.WriteStartElement("G");
-            writer.WriteString(color.G.ToString());
-            writer.WriteEndElement();
-            writer.WriteStartElement("B");
-            writer.WriteString(color.B.ToString());
-            writer.WriteEndElement();
-            writer.WriteEndElement(); //color
-            writer.WriteStartElement("Thickness");
-            writer.WriteString(thickness.ToString());
-            writer.WriteEndElement();
+                FileStream fileStream = new FileStream(saveFileDialog.FileName, FileMode.OpenOrCreate);
 
-            writer.WriteEndElement(); //points
-            writer.WriteEndElement(); //name
+                XmlSerializer xmlSerializer = new XmlSerializer(seralizedShapes.GetType());
+                xmlSerializer.Serialize(fileStream, seralizedShapes);
+                fileStream.Close();
+            }
         }
 
         private void LoadButtonClick(object sender, RoutedEventArgs e)
@@ -367,37 +382,69 @@ namespace Rasterization
 
             if (result == true)
             {
+                var stream = new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read);
+                var xmlSerializer = new XmlSerializer(new List<SeralizedShapes>().GetType());
+
+                var items = (List<SeralizedShapes>)xmlSerializer.Deserialize(stream);
+                stream.Close();
+
                 foreach (var o in DrawnShapes.ToList())
                 {
-                    //o.DeleteShape();
-                    //DrawnShapes.Remove(o);
-                    //ReadXmlValues(dialog.FileName);
+                    o.DeleteShape();
+                    DrawnShapes.Remove(o);
                 }
-            }
-        }
 
-        private void ReadXmlValues(string filename)
-        {
-            using (XmlReader reader = XmlReader.Create(filename))
-            {
-                reader.Read();
-                reader.ReadStartElement("Shapes");
-
-                if (reader.ReadString() == "Line")
+                foreach (var item in items)
                 {
-                    reader.ReadStartElement("Line");
-
-                    reader.ReadEndElement();
+                    if(item.Name == "Line")
+                    {
+                        writeableBitmap.Lock();
+                        try
+                        {
+                            DrawLine line = new DrawLine(item.Points[0], item.Points[1]);
+                            line.WriteableBitmap = writeableBitmap;
+                            line.ApplyDDA(item.Color);
+                            line.Thickness = item.Thickness;
+                            DrawnShapes.Add(line);
+                        }
+                        finally
+                        {
+                            writeableBitmap.Unlock();
+                        }
+                    }
+                    if(item.Name == "Circle")
+                    {
+                        writeableBitmap.Lock();
+                        try
+                        {
+                            DrawCircle circle = new DrawCircle(item.Points[0], item.Points[1]);
+                            circle.WriteableBitmap = writeableBitmap;
+                            circle.ApplyMidpointCircle(item.Color);
+                            circle.Thickness = item.Thickness;
+                            DrawnShapes.Add(circle);
+                        }
+                        finally
+                        {
+                            writeableBitmap.Unlock();
+                        }
+                    }
+                    if(item.Name == "Polygon")
+                    {
+                        writeableBitmap.Lock();
+                        try
+                        {
+                            DrawPolygon polygon = new DrawPolygon(item.Points);
+                            polygon.WriteableBitmap = writeableBitmap;
+                            polygon.ApplyModifiedDDA(item.Color);
+                            polygon.Thickness = item.Thickness;
+                            DrawnShapes.Add(polygon);                           
+                        }
+                        finally
+                        {
+                            writeableBitmap.Unlock();
+                        }
+                    }
                 }
-                reader.ReadStartElement("Line");
-                Console.Write("The content of the title element:  ");
-                Console.WriteLine(reader.ReadString());
-                reader.ReadEndElement();
-                reader.ReadStartElement("price");
-                Console.Write("The content of the price element:  ");
-                Console.WriteLine(reader.ReadString());
-                reader.ReadEndElement();
-                reader.ReadEndElement(); //shapes
             }
         }
 
