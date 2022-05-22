@@ -221,7 +221,6 @@ namespace Rasterization
             }
             if (DrawingMode == 3) //polygon
             {
-                Debug.WriteLine(polygonPointsDone);
                 if (polygonPointsDone == true)
                 {
                     writeableBitmap.Lock();
