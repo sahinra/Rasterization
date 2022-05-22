@@ -61,7 +61,6 @@ namespace Rasterization
 
         public void ApplyMidpointCircle(Color color)
         {
-            Color = color;
             int R = Radius;
             int dE = 3;
             int dSE = 5 - (2 * R);
@@ -152,7 +151,7 @@ namespace Rasterization
             int newRadius = MeasureDistance((int)Points[0].X, x, (int)Points[0].Y, y);
             Radius = newRadius;
             
-            Draw(Colors.Red);
+            Draw(Color);
         }
 
         public void MoveShape(int x, int y)
@@ -171,7 +170,7 @@ namespace Rasterization
             Points.RemoveAt(0);
             Points.Insert(0, newCenter);
 
-            Draw(Colors.Red);
+            Draw(Color);
         }
     }
 }

@@ -7,10 +7,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Reflection;
-using System.Xml;
 using Microsoft.Win32;
 using System.Xml.Serialization;
 using System.IO;
+using System.Diagnostics;
 
 namespace Rasterization
 {
@@ -20,7 +20,6 @@ namespace Rasterization
         private Point EndPoint;
         int DrawingMode = 13; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Rectangle,
                              // 9-Select Rect, 10-Select Poly, 11-Clip, 12-Fill, 13-Disabled, 
-        private int PolygonPointNum = 5;
         private int selectedIndex = 0;
 
         private List<IDrawnShapes> DrawnShapes = new List<IDrawnShapes>();
@@ -31,6 +30,7 @@ namespace Rasterization
         private List<Point> polygonPoints = new List<Point>();     
         private Point selectedPoint = new Point(); //point to edit
         private int AntialiasOnOff = 0; //off
+        private bool polygonPointsDone = false;
 
         public MainWindow()
         {
@@ -79,6 +79,7 @@ namespace Rasterization
         {
             var currentSelectedIndex = MyColorComboBox.SelectedIndex;
             SelectedColor = ColorInfo[currentSelectedIndex];
+            DrawnShapes[selectedIndex].Color = SelectedColor;
             DrawnShapes[selectedIndex].DeleteShape();
             DrawnShapes[selectedIndex].Draw(SelectedColor);
         }
@@ -146,12 +147,24 @@ namespace Rasterization
             StartPoint = e.GetPosition(MyCanvas);
             if(DrawingMode == 3) //polygon
             {
-                if (polygonPoints.Count < PolygonPointNum)
+                if(polygonPoints.Count == 0 && polygonPointsDone == false)
                 {
                     Point p = e.GetPosition(MyCanvas);
                     polygonPoints.Add(p);
+                    return;
                 }
-                else return;
+                
+                if (MeasureDistance(StartPoint, polygonPoints[0]) > 100 && polygonPointsDone == false) // polygonPoints.Count < PolygonPointNum
+                {
+                    Point p1 = e.GetPosition(MyCanvas);
+                    polygonPoints.Add(p1);
+                    return;
+                }
+                else
+                {
+                    polygonPointsDone = true;
+                    return;
+                }
             }
             if (DrawingMode == 4) //move
             {
@@ -166,7 +179,7 @@ namespace Rasterization
 
         private void CanvasMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.LeftButton == MouseButtonState.Pressed || DrawingMode != 3)
             {
                 EndPoint = e.GetPosition(MyCanvas);
             }
@@ -180,8 +193,8 @@ namespace Rasterization
                 try
                 {
                     DrawLine line = new DrawLine(StartPoint, EndPoint);
-                    line.Color = SelectedColor;
                     line.WriteableBitmap = writeableBitmap;
+                    line.Color = SelectedColor;
                     line.ApplyDDA(SelectedColor);
                     DrawnShapes.Add(line);
                 }
@@ -197,6 +210,7 @@ namespace Rasterization
                 {
                     DrawCircle circle = new DrawCircle(StartPoint, EndPoint);
                     circle.WriteableBitmap = writeableBitmap;
+                    circle.Color = SelectedColor;
                     circle.ApplyMidpointCircle(SelectedColor);
                     DrawnShapes.Add(circle);
                 }
@@ -207,16 +221,19 @@ namespace Rasterization
             }
             if (DrawingMode == 3) //polygon
             {
-                if (polygonPoints.Count == PolygonPointNum)
+                Debug.WriteLine(polygonPointsDone);
+                if (polygonPointsDone == true)
                 {
                     writeableBitmap.Lock();
                     try
                     {
                         DrawPolygon polygon = new DrawPolygon(polygonPoints);
                         polygon.WriteableBitmap = writeableBitmap;
+                        polygon.Color = SelectedColor;
                         polygon.ApplyModifiedDDA(SelectedColor);
                         DrawnShapes.Add(polygon);
                         polygonPoints.Clear();
+                        polygonPointsDone = false;
                     }
                     finally
                     {
@@ -245,6 +262,7 @@ namespace Rasterization
                 {
                     DrawRectangle rect = new DrawRectangle(StartPoint, EndPoint);
                     rect.WriteableBitmap = writeableBitmap;
+                    rect.Color = SelectedColor;
                     rect.RectangleDrawing(SelectedColor);
                     DrawnShapes.Add(rect);
                 }
@@ -403,8 +421,8 @@ namespace Rasterization
                         {
                             DrawLine line = new DrawLine(item.Points[0], item.Points[1]);
                             line.WriteableBitmap = writeableBitmap;
-                            line.ApplyDDA(item.Color);
                             line.Thickness = item.Thickness;
+                            line.ApplyDDA(item.Color);                          
                             DrawnShapes.Add(line);
                         }
                         finally
@@ -419,8 +437,8 @@ namespace Rasterization
                         {
                             DrawCircle circle = new DrawCircle(item.Points[0], item.Points[1]);
                             circle.WriteableBitmap = writeableBitmap;
-                            circle.ApplyMidpointCircle(item.Color);
                             circle.Thickness = item.Thickness;
+                            circle.ApplyMidpointCircle(item.Color);                          
                             DrawnShapes.Add(circle);
                         }
                         finally
@@ -435,9 +453,25 @@ namespace Rasterization
                         {
                             DrawPolygon polygon = new DrawPolygon(item.Points);
                             polygon.WriteableBitmap = writeableBitmap;
-                            polygon.ApplyModifiedDDA(item.Color);
                             polygon.Thickness = item.Thickness;
+                            polygon.ApplyModifiedDDA(item.Color);                         
                             DrawnShapes.Add(polygon);                           
+                        }
+                        finally
+                        {
+                            writeableBitmap.Unlock();
+                        }
+                    }
+                    if (item.Name == "Rectangle")
+                    {
+                        writeableBitmap.Lock();
+                        try
+                        {
+                            DrawRectangle rect = new DrawRectangle(item.Points[0], item.Points[2]);
+                            rect.WriteableBitmap = writeableBitmap;
+                            rect.Thickness = item.Thickness;
+                            rect.RectangleDrawing(item.Color);
+                            DrawnShapes.Add(rect);
                         }
                         finally
                         {

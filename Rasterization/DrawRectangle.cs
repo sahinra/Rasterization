@@ -43,7 +43,6 @@ namespace Rasterization
 
         public void Draw(Color color)
         {
-            Color = color;
             WriteableBitmap.Lock();
             try
             {
@@ -95,7 +94,6 @@ namespace Rasterization
 
         public void ComputeDDAPoints(Point startPoint, Point endPoint, Color color)
         {
-            Color = color;
             double distanceX = endPoint.X - startPoint.X;
             double distanceY = endPoint.Y - startPoint.Y;
             double step;
@@ -137,54 +135,36 @@ namespace Rasterization
 
         public void EditShape(int x, int y, int index)
         {
-            //double dx = x - Points[index].X;
-            //double dy = y - Points[index].Y;
+            DeleteShape();
 
-            //if (index == 0 || index == 3)
-            //{
-            //    Point newPoint1 = new Point
-            //    {
-            //        X = Points[index].X + dx,
-            //        Y = Points[index].Y + dy
-            //    };
-            //    Point newPoint2 = new Point
-            //    {
-            //        X = Points[index - 1].X + dx,
-            //        Y = Points[index].Y + dy
-            //    };
-            //    Point newPoint3 = new Point
-            //    {
-            //        X = Points[index].X + dx,
-            //        Y = Points[index].Y + dy
-            //    };
+            double dx = x - Points[index].X;
+            double dy = y - Points[index].Y;
+            Point newPoint2 = new Point();
 
-            //    DeleteShape();
+            Point newPoint1 = new Point
+            {
+                X = Points[index].X + dx,
+                Y = Points[index].Y + dy
+            };
 
-            //    Points.RemoveAt(index);
-            //    Points.Insert(index, newPoint);
+            if (index == 0 || index == 1)
+            {
+                newPoint2 = Points[index + 2];
+            }
+            else if(index == 2)
+            {
+                newPoint2 = Points[0];
+            }
+            else
+            {
+                newPoint2 = Points[1];
+            }
+         
+            Points.Clear();
 
-            //    Draw(Colors.Red);
-            //}
-            //else
-            //{
+            FindVertices(newPoint1, newPoint2);
 
-            //}
-
-
-            
-
-            ////Point newPoint = new Point
-            ////{
-            ////    X = Points[index].X + dx,
-            ////    Y = Points[index].Y + dy
-            ////};
-
-            //DeleteShape();
-
-            //Points.RemoveAt(index);
-            //Points.Insert(index, newPoint);
-
-            //Draw(Colors.Red);
+            Draw(Color);
         }
 
         public void MoveShape(int x, int y)
@@ -211,7 +191,7 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            Draw(Colors.Red);
+            Draw(Color);
         }
     }
 }

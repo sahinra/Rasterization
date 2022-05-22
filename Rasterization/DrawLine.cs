@@ -3,7 +3,6 @@ using System.Windows.Media;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Rasterization
 {
@@ -55,7 +54,6 @@ namespace Rasterization
         {
             Point startPoint = Points[0];
             Point endPoint = Points[1];
-            Color = color;
             double distanceX = endPoint.X - startPoint.X;
             double distanceY = endPoint.Y - startPoint.Y;
             double step;
@@ -103,7 +101,6 @@ namespace Rasterization
 
         public void Draw(Color color)
         {
-            Color = color;
             WriteableBitmap.Lock();
             try
             {
@@ -159,7 +156,6 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            Debug.WriteLine(this.Color);
             Draw(Color);
         }
     }

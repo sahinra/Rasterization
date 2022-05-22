@@ -77,7 +77,7 @@ namespace Rasterization
             Points.RemoveAt(index);
             Points.Insert(index, newPoint);
 
-            Draw(Colors.Red);
+            Draw(Color);
         }
 
         public void MoveShape(int x, int y)
@@ -104,7 +104,7 @@ namespace Rasterization
                 Points.Add(p);
             }
 
-            Draw(Colors.Red);
+            Draw(Color);
         }
 
         void SetPixel(int x, int y, Color color)
@@ -133,7 +133,6 @@ namespace Rasterization
 
         public void ComputeDDAPoints(Point startPoint, Point endPoint, Color color)
         {
-            Color = color;
             double distanceX = endPoint.X - startPoint.X;
             double distanceY = endPoint.Y - startPoint.Y;
             double step;
