@@ -18,24 +18,27 @@ namespace Rasterization
     {
         private Point StartPoint;
         private Point EndPoint;
-        int DrawingMode = 13; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Rectangle,
-                             // 9-Select Rect, 10-Select Poly, 11-Clip, 12-Fill, 13-Disabled, 
+        int DrawingMode = 11; // 1-Line, 2-Circle, 3- Polygon, 4-Move, 5-Edit, 6-Delete, 7-Clear All, 8-Rectangle,
+                             // 9-Select Rect, 10-Select Poly, 11-Disabled, 
         private int selectedIndex = 0;
 
         private List<IDrawnShapes> DrawnShapes = new List<IDrawnShapes>();
         private List<Color> ColorInfo = new List<Color>();
         private Color SelectedColor = Colors.Red;
+        private Color SelectedBackColor = Colors.HotPink;
+        private DrawRectangle SelectedRect;
+        private DrawPolygon SelectedPoly;
 
         private WriteableBitmap writeableBitmap;
         private List<Point> polygonPoints = new List<Point>();     
         private Point selectedPoint = new Point(); //point to edit
-        private int AntialiasOnOff = 0; //off
         private bool polygonPointsDone = false;
 
         public MainWindow()
         {
             InitializeComponent();
             MyColorComboBox.SelectionChanged += new SelectionChangedEventHandler(ColorComboBoxSelectionChanged);
+            MyColorComboBox2.SelectionChanged += new SelectionChangedEventHandler(ColorComboBox2SelectionChanged);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -71,7 +74,14 @@ namespace Rasterization
                 comboBoxItem.Height = 20;
                 comboBoxItem.HorizontalContentAlignment = HorizontalAlignment.Center;
 
+                ComboBoxItem comboBoxItem2 = new ComboBoxItem();
+                comboBoxItem2.Background = new SolidColorBrush(ColorInfo[i]);
+                comboBoxItem2.HorizontalAlignment = HorizontalAlignment.Stretch;
+                comboBoxItem2.Height = 20;
+                comboBoxItem2.HorizontalContentAlignment = HorizontalAlignment.Center;
+
                 MyColorComboBox.Items.Add(comboBoxItem);
+                MyColorComboBox2.Items.Add(comboBoxItem2);
             }
         }
 
@@ -82,6 +92,20 @@ namespace Rasterization
             DrawnShapes[selectedIndex].Color = SelectedColor;
             DrawnShapes[selectedIndex].DeleteShape();
             DrawnShapes[selectedIndex].Draw(SelectedColor);
+        }
+
+        void ColorComboBox2SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var currentSelectedIndex = MyColorComboBox2.SelectedIndex;
+            SelectedBackColor = ColorInfo[currentSelectedIndex];
+            SelectedPoly.FilledColor = SelectedBackColor;
+            SelectedPoly.DeleteShape();
+            SelectedPoly.IsFilledColor = true;
+            SelectedPoly.Draw(SelectedPoly.Color);
+            if (SelectedPoly.IsFilledColor)
+            {
+                SelectedPoly.FillPolygon(SelectedPoly.FilledColor);
+            }
         }
 
         private int MeasureDistance(Point p1, Point p2)
@@ -145,16 +169,16 @@ namespace Rasterization
         private void CanvasLeftDown(object sender, MouseButtonEventArgs e)
         {
             StartPoint = e.GetPosition(MyCanvas);
-            if(DrawingMode == 3) //polygon
+            if (DrawingMode == 3) //polygon
             {
-                if(polygonPoints.Count == 0 && polygonPointsDone == false)
+                if (polygonPoints.Count == 0 && polygonPointsDone == false)
                 {
                     Point p = e.GetPosition(MyCanvas);
                     polygonPoints.Add(p);
                     return;
                 }
-                
-                if (MeasureDistance(StartPoint, polygonPoints[0]) > 100 && polygonPointsDone == false) // polygonPoints.Count < PolygonPointNum
+
+                if (MeasureDistance(StartPoint, polygonPoints[0]) > 100 && polygonPointsDone == false)
                 {
                     Point p1 = e.GetPosition(MyCanvas);
                     polygonPoints.Add(p1);
@@ -174,6 +198,24 @@ namespace Rasterization
             {
                 selectedIndex = FindNearestShape();
                 selectedPoint = FindNearestPoint(StartPoint, DrawnShapes[selectedIndex].GetPoints());
+            }
+            if (DrawingMode == 9)
+            {
+                selectedIndex = FindNearestShape();
+                if (DrawnShapes[selectedIndex].Name == "Rectangle")
+                {
+                    SelectedRect = (DrawRectangle)DrawnShapes[selectedIndex];
+                    Debug.WriteLine("Rectangle selected!");
+                }
+            }
+            if (DrawingMode == 10)
+            {
+                selectedIndex = FindNearestShape();
+                if (DrawnShapes[selectedIndex].Name == "Polygon")
+                {
+                    SelectedPoly = (DrawPolygon)DrawnShapes[selectedIndex];
+                    Debug.WriteLine("Polygon selected!");
+                }
             }
         }
 
@@ -221,6 +263,7 @@ namespace Rasterization
             }
             if (DrawingMode == 3) //polygon
             {
+                Debug.WriteLine(polygonPointsDone);
                 if (polygonPointsDone == true)
                 {
                     writeableBitmap.Lock();
@@ -315,12 +358,20 @@ namespace Rasterization
 
         private void ClipButtonClick(object sender, RoutedEventArgs e)
         {
-            DrawingMode = 11;
+            SelectedPoly.LiangBarsky(SelectedRect.LeftTop, SelectedRect.RightBottom, SelectedRect);
         }
 
         private void FillButtonClick(object sender, RoutedEventArgs e)
         {
-            DrawingMode = 12;
+            if(SelectedPoly != null)
+            {
+                if(SelectedBackColor != null)
+                {
+                    SelectedPoly.FillPolygon(Colors.Blue);
+                    Debug.WriteLine("inside");
+                }
+                Debug.WriteLine("helloo");
+            }
         }
 
         private void DeleteButtonClick(object sender, RoutedEventArgs e)
@@ -338,25 +389,14 @@ namespace Rasterization
             MySlider.Value = 0;
         }
 
-        private void AntialiasButtonClick(object sender, RoutedEventArgs e)
-        {
-            if(AntialiasOnOff == 0)
-            {
-                AntialiasOnOff = 1;
-                aliasButtonText.Text = "Antialias On";
-            }
-            else
-            {
-                AntialiasOnOff = 0;
-                aliasButtonText.Text = "Antialias Off";
-            }
-        }
-
         public struct SeralizedShapes {
             public string Name;
             public List<Point> Points;
             public Color Color;
+            public Color BackColor;
             public int Thickness;
+            public bool FilledColor;
+            public bool FilledImage;
         }
 
         private void SaveButtonClick(object sender, RoutedEventArgs e)
@@ -373,7 +413,10 @@ namespace Rasterization
                     Name = item.Name,
                     Points = item.GetPoints(),
                     Color = item.Color,
-                    Thickness = item.Thickness
+                    BackColor = item.FilledColor,
+                    Thickness = item.Thickness,
+                    FilledColor = item.IsFilledColor,
+                    FilledImage = item.IsFilledImage
                 };
 
                 seralizedShapes.Add(newItem);
@@ -453,7 +496,12 @@ namespace Rasterization
                             DrawPolygon polygon = new DrawPolygon(item.Points);
                             polygon.WriteableBitmap = writeableBitmap;
                             polygon.Thickness = item.Thickness;
-                            polygon.ApplyModifiedDDA(item.Color);                         
+                            polygon.FilledColor = item.BackColor;
+                            polygon.ApplyModifiedDDA(item.Color);
+                            if (polygon.FilledColor != null)
+                                polygon.FillPolygon(item.BackColor);
+                            if (polygon.FilledImage != null)
+                                polygon.FillWithImage();
                             DrawnShapes.Add(polygon);                           
                         }
                         finally
@@ -489,6 +537,47 @@ namespace Rasterization
                 DrawnShapes[selectedIndex].Thickness = (int)MySlider.Value;
                 DrawnShapes[selectedIndex].Draw(SelectedColor);
             }
+        }
+
+        private System.Drawing.Bitmap BitmapImage2Bitmap(BitmapImage bitmapImage)
+        {
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bitmapImage));
+                enc.Save(outStream);
+                System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(outStream);
+
+                return new System.Drawing.Bitmap(bitmap);
+            }
+        }
+
+        private void FillImageButtonClick(object sender, RoutedEventArgs e)
+        {
+
+            var dialog = new OpenFileDialog();
+            dialog.FileName = "Document";
+            dialog.Filter = "All supported graphics|*.jpg;*.jpeg;*.png;*.bmp;*.tiff|" +
+            "JPEG (*.jpg;*.jpeg)|*.jpg;*.jpeg|" +
+            "Portable Network Graphic (*.png)|*.png";
+
+            bool? result = dialog.ShowDialog();
+
+            if (SelectedPoly == null)
+            {
+                return;
+            }
+
+            if (result == true)
+            {              
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(dialog.FileName);
+                bitmap.EndInit();
+                SelectedPoly.FilledImage = BitmapImage2Bitmap(bitmap);
+            }
+
+            SelectedPoly.FillWithImage();
         }
     }
 }

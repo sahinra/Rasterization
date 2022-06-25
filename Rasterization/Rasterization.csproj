@@ -67,6 +67,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ColorToBrushConverter.cs" />
+    <Compile Include="Cube.cs" />
     <Compile Include="DrawCircle.cs" />
     <Compile Include="DrawLine.cs" />
     <Compile Include="DrawPolygon.cs" />

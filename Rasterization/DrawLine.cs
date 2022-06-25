@@ -10,6 +10,9 @@ namespace Rasterization
     {
         public string Name { get; set; } = "Line";
         public Color Color { get; set; } = Colors.Red;
+        public Color FilledColor { get; set; } = Colors.Black;
+        public bool IsFilledImage { get; set; } = false;
+        public bool IsFilledColor { get; set; } = false;
         public WriteableBitmap WriteableBitmap { get; set; }
 
         public List<Point> Points = new List<Point>();
@@ -157,6 +160,10 @@ namespace Rasterization
             }
 
             Draw(Color);
+        }
+
+        public void FillPolygon(Color color)
+        {
         }
     }
 }

@@ -79,13 +79,15 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" Content="Color" Style="{StaticResource LabelStyle}"/>
-                    <Label Grid.Column="0" Grid.Row="1" Content="Thickness" Style="{StaticResource LabelStyle}"/>
+                    <Label Grid.Column="0" FontSize="6" VerticalAlignment="Top" Grid.Row="0" Content="Color" Style="{StaticResource LabelStyle}"/>
+                    <Label Grid.Column="0" FontSize="6" Grid.Row="1" Content="BackColor" Style="{StaticResource LabelStyle}"/>
+                    <Label Grid.Column="0" FontSize="6" Grid.Row="2" Content="Thickness" Style="{StaticResource LabelStyle}"/>
                     <ComboBox Grid.Column="1"
                                   Grid.Row="0"
                                   x:Name="MyColorComboBox"
@@ -93,8 +95,15 @@
                                   ItemsSource ="{Binding}"
                                   SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}"
                                   SelectedValue=""/>
+                    <ComboBox Grid.Column="1"
+                                  Grid.Row="1"
+                                  x:Name="MyColorComboBox2"
+                                  Style="{StaticResource ComboBoxStyle}"
+                                  ItemsSource ="{Binding}"
+                                  SelectedIndex="{Binding Fill, Converter={StaticResource colorToBrushConverter}}"
+                                  SelectedValue=""/>
                     <Slider Grid.Column="1"
-                                Grid.Row="1"
+                                Grid.Row="2"
                                 x:Name="MySlider"
                                 Style="{StaticResource SliderStyle}"
                                 TickFrequency="1"
@@ -120,8 +129,8 @@
                 <Button x:Name="FillButton" Style="{StaticResource ButtonStyle}" Click="FillButtonClick">
                     <TextBlock Text="Fill Poly" Style="{StaticResource ButtonTextBlockStyle}"/>
                 </Button>
-                <Button x:Name="AntiAliasButton" Style="{StaticResource ButtonStyle}" Click="AntialiasButtonClick">
-                    <TextBlock x:Name="aliasButtonText" Text="Antialias Off" Style="{StaticResource ButtonTextBlockStyle}"/>
+                <Button x:Name="FillImageButton" Style="{StaticResource ButtonStyle}" Click="FillImageButtonClick">
+                    <TextBlock x:Name="fillImageButtonText" Text="Load Image" Style="{StaticResource ButtonTextBlockStyle}"/>
                 </Button>
                 <Button x:Name="SaveButton" Style="{StaticResource ButtonStyle}" Click="SaveButtonClick">
                     <TextBlock Text="Save" Style="{StaticResource ButtonTextBlockStyle}"/>

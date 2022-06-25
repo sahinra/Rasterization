@@ -1,20 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Rasterization
 {
-    class DrawRectangle : IDrawnShapes
+    public class DrawRectangle : IDrawnShapes
     {
         public string Name { get; set; } = "Rectangle";
         public Color Color { get; set; } = Colors.Red;
+        public Color FilledColor { get; set; } = Colors.Black;
+        public bool IsFilledImage { get; set; } = false;
+        public bool IsFilledColor { get; set; } = false;
         public WriteableBitmap WriteableBitmap { get; set; }
 
         private List<Point> Points = new List<Point>();
 
         public int Thickness { get; set; } = 1;
+
+        public Point RightBottom { get { return new Point(Points.OrderBy(p => p.X).ToList()[Points.Count()-1].X, Points.OrderBy(p => p.Y).ToList()[Points.Count() - 1].Y); } }
+
+        public Point LeftTop { get { return new Point(Points.OrderBy(p => p.X).ToList()[0].X, Points.OrderBy(p => p.Y).ToList()[0].Y); } }
 
         public DrawRectangle(Point startPoint, Point endPoint)
         {
@@ -192,6 +200,10 @@ namespace Rasterization
             }
 
             Draw(Color);
+        }
+
+        public void FillPolygon(Color color)
+        {
         }
     }
 }

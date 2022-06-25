@@ -10,6 +10,9 @@ namespace Rasterization
     {
         public string Name { get; set; } = "Circle";
         public Color Color { get; set; } = Colors.Red;
+        public Color FilledColor { get; set; } = Colors.Black;
+        public bool IsFilledImage { get; set; } = false;
+        public bool IsFilledColor { get; set; } = false;
         public WriteableBitmap WriteableBitmap { get; set; }
         public int Radius { get; set; }
 
@@ -100,7 +103,7 @@ namespace Rasterization
 
                     if (Thickness >= 2) // 2, 3
                     {
-                        SetPixel((int)(x + Points[0].X), y + (int)Points[0].Y + 1, color);
+                        SetPixel((int)(x + Points[0].X), y + (int)Points[0].Y + 1, color); //ranaebru
                         SetPixel((int)(-x + Points[0].X), y + (int)Points[0].Y + 1, color);
                         SetPixel((int)(x + Points[0].X), -y + (int)Points[0].Y - 1, color);
                         SetPixel((int)(-x + Points[0].X), -y + (int)Points[0].Y - 1, color);
@@ -171,6 +174,10 @@ namespace Rasterization
             Points.Insert(0, newCenter);
 
             Draw(Color);
+        }
+
+        public void FillPolygon(Color color)
+        {
         }
     }
 }
